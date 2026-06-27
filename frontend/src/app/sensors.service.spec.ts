@@ -52,7 +52,6 @@ describe('SensorService', () => {
   it('propagates an error response to the caller', () => {
     let errored = false;
     service.getAllSensorData().subscribe({
-      next: () => {},
       error: () => (errored = true),
     });
 

@@ -60,13 +60,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Format check (prettier)
+        run: npm run format:check
+
       - name: Build
         run: npm run build
 
       - name: Test (karma, headless Chrome)
         run: npm test
-      # NOTE: lint (#25) is not gated yet — no `lint` script / ESLint
-      # config exists. It joins this job when that issue lands.
 
   gitleaks:
     name: Secret scan (gitleaks)

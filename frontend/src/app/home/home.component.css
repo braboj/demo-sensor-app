@@ -1,28 +1,29 @@
 /* home.component.css */
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
 }
 
-th, td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    text-align: left;
+th,
+td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
 }
 
 th {
-    background-color: #f4f4f4;
+  background-color: #f4f4f4;
 }
 
 .status {
-    margin: 20px 0;
-    font-style: italic;
-    color: #555;
+  margin: 20px 0;
+  font-style: italic;
+  color: #555;
 }
 
 .status-error {
-    color: #b00020;
-    font-style: normal;
-    font-weight: 600;
+  color: #b00020;
+  font-style: normal;
+  font-weight: 600;
 }
