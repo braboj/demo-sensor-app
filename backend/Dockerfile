@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the application port
 EXPOSE 5000
 
-# Run under gunicorn — never the Flask dev server. A single worker keeps
-# one data-generator thread until the generator moves to its own worker
-# process (issue #15).
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "app:create_app()"]
+# Run under gunicorn — never the Flask dev server. The data generator runs
+# as a separate worker service, so multiple web workers are safe; tune with
+# the WEB_CONCURRENCY env var (gunicorn reads it).
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"]
