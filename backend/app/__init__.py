@@ -1,22 +1,24 @@
-import os
 import threading
 from flask import Flask
+from flask_cors import CORS
+from .config import get_config, split_origins
 from .routes import api, main
 from .database import db
 from .services import SensorService
 
 def create_app(test_config=None):
 
-    # Configure the Flask app to use the instance folder for configuration
     app = Flask(__name__, instance_relative_config=True)
 
-    # Load the default configuration
-    if test_config is None:
-        app.config.from_pyfile('config.py', silent=True)
-
-    # Load the test configuration
-    else:
+    # Load the environment-selected config class (defaults to the safe
+    # ProductionConfig); an explicit mapping from the tests overrides it.
+    app.config.from_object(get_config())
+    if test_config is not None:
         app.config.from_mapping(test_config)
+
+    # Scope CORS to the configured frontend origins — never a wildcard.
+    origins = split_origins(app.config.get('CORS_ORIGINS'))
+    CORS(app, resources={r"/api/*": {"origins": origins}})
 
     # Register the routes with the app
     app.register_blueprint(main)
