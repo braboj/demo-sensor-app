@@ -59,9 +59,11 @@ jobs:
 
       - name: Build
         run: npm run build
-      # NOTE: lint (#25) and unit tests (#18) are not gated yet — no
-      # `lint`/`test` script or Karma target exists. They join this job
-      # when those issues land.
+
+      - name: Test (karma, headless Chrome)
+        run: npm test
+      # NOTE: lint (#25) is not gated yet — no `lint` script / ESLint
+      # config exists. It joins this job when that issue lands.
 
   gitleaks:
     name: Secret scan (gitleaks)
