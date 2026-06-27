@@ -13,5 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Expose the application port
 EXPOSE 5000
 
-# Command to run the application
-CMD ["python", "run.py"]
+# Run under gunicorn — never the Flask dev server. A single worker keeps
+# one data-generator thread until the generator moves to its own worker
+# process (issue #15).
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "app:create_app()"]
