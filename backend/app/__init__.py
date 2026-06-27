@@ -2,7 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from .config import get_config, split_origins
 from .routes import api, main
-from .database import db
+from .database import db, migrate
+from . import models  # noqa: F401  -- register models on the metadata for Alembic
 
 def create_app(test_config=None):
 
@@ -22,14 +23,11 @@ def create_app(test_config=None):
     app.register_blueprint(main)
     app.register_blueprint(api)
 
-    # Initialize the database
+    # Initialize the database and migration engine. Schema comes from
+    # Alembic migrations (`flask db upgrade`), never db.create_all() — the
+    # factory does wiring only. The sensor data generator runs as a separate
+    # worker process (worker.py), never a thread spawned here.
     db.init_app(app)
-
-    # Create the database tables. This stays until Alembic migrations land
-    # (#22); the factory must otherwise do wiring only. The sensor data
-    # generator runs as a separate worker process (worker.py), never a
-    # thread spawned here.
-    with app.app_context():
-        db.create_all()
+    migrate.init_app(app, db)
 
     return app

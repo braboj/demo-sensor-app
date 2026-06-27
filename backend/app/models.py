@@ -10,7 +10,10 @@ class SensorData(db.Model):
     """
 
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # Indexed: every read orders by timestamp DESC (see SensorService).
+    timestamp = db.Column(
+        db.DateTime, default=db.func.current_timestamp(), index=True
+    )
     temperature = db.Column(db.Float, nullable=False)
     humidity = db.Column(db.Float, nullable=False)
     vibration = db.Column(db.Integer, nullable=False)
