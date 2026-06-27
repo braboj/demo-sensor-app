@@ -1,21 +1,25 @@
-# Use the official Node.js image as the base image — pinned, not floating.
-# (The multi-stage nginx production build is handled in #17.)
-FROM node:22-alpine
+# --- Build stage: compile the Angular app ---
+FROM node:22-alpine AS build
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy all the files from the frontend directory to the working directory
-COPY . .
-
-# Install angular-cli globally
-RUN npm install -g @angular/cli
-
-# Install the dependencies (reproducible: requires committed package-lock.json)
+# Install dependencies first for better layer caching (deps change rarely).
+COPY package.json package-lock.json ./
 RUN npm ci
 
-# Expose the port that the application will run on
-EXPOSE 4200
+# Build the production bundle (ng build defaults to the production config,
+# which swaps in environment.prod.ts -> same-origin /api/sensors).
+COPY . .
+RUN npm run build
 
-# Start the application in development mode
-CMD ["ng", "serve", "--host", "0.0.0.0"]
+# --- Runtime stage: serve the static bundle via nginx ---
+FROM nginx:1.27-alpine
+
+# SPA routing + /api reverse proxy to the backend service.
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# The Angular application builder emits static assets under browser/.
+COPY --from=build /app/dist/sensor-app/browser /usr/share/nginx/html
+
+EXPOSE 80
+# nginx:alpine already runs `nginx -g 'daemon off;'` as its CMD.
