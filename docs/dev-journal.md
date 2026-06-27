@@ -4,6 +4,53 @@ A session-by-session log of significant work. Newest entry first.
 
 ---
 
+## 2026-06-27 — P2 architecture/API/polish + repo hardening
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated, admin-merged (solo repo).
+
+Completed **Phase 3 (P2)** of the 360-audit refactor (epic #12) and hardened
+the repo workflow.
+
+### PRs merged (5)
+| PR | Summary | Closes |
+|----|---------|--------|
+| #49 | Alembic migrations; drop runtime `db.create_all()`; index `timestamp`; one-shot compose `migrate` service | #22 |
+| #50 | `/api/v1` contract: bounded `?limit=` (400 on bad input), RFC 9457 JSON errors, ISO-8601 UTC timestamps, `select()` style, `/health`+`/ready` | #23 |
+| #51 | Backend restructure to `src/sensor_api/` (factory/config/extensions/blueprints/services); worker → `python -m sensor_api.worker`; CI runs from `backend/` | #24 |
+| #52 | Frontend polish: number/date pipes, vibration legend, table a11y, `@if`/`@for`, ESLint + Prettier (CI-gated) | #25 |
+| #53 | Pre-commit hooks (ruff-check, gitleaks, eslint, prettier); `docs/PLAYBOOK.md` | #27 |
+
+Plus this PR (#26): reconciled `README`/`SOLUTION` with shipped reality;
+added `docs/ONBOARDING.md`; expanded `docs/PLAYBOOK.md`; un-ignored
+`.env.example` in `.gitignore`.
+
+**Issues closed:** #22, #23, #24, #25, #27 (and #26 by this PR).
+
+### Repo hardening (outside the epic)
+- Triaged + merged 10 Dependabot PRs (#35–#44: CI action bumps, flask-cors 5→6,
+  pytest 8→9, ruff 0.8→0.15).
+- Configured branch protection on `main` (required checks + up-to-date + PR +
+  1 approval; admins not enforced so the owner merges via override); enabled
+  repo auto-merge + delete-branch-on-merge.
+
+### Known follow-ups / not verified this session
+- **Docker still not run end-to-end** (engine unavailable all session): the
+  `migrate` service, src-layout image, and worker command were validated with
+  `docker compose config` + local SQLite, **not** a live `docker compose up`.
+  Do this smoke test before the Render deploy (#29).
+- **`backend/.env.example`** could not be written by tooling (a `.env*` write
+  guard); the `.gitignore` negation is in place, so the file just needs to be
+  dropped in. Required vars are documented in `ONBOARDING.md`.
+- **mypy** still not gated (backend un-annotated) — deferred in both CI and
+  pre-commit; needs a typed `db.Model` base + annotations.
+
+### Next
+P2 complete. Remaining: features (#7 Grafana, #8 websockets) and the Render
+deploy (#29) — run the Docker smoke test first.
+
+---
+
 ## 2026-06-27 — P0 security + P1 correctness / CI / containers
 
 **Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off

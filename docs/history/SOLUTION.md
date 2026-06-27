@@ -1,4 +1,26 @@
 
+> **Status (reconciled 2026-06-27).** This is the original take-home
+> *planning* narrative and is kept for history — it does not describe the
+> current code. Where the plan and reality differ:
+>
+> | Milestone | Planned | Actual |
+> | --- | --- | --- |
+> | V0.0.1.0 | Backend REST API | ✅ Shipped (Flask + SQLAlchemy + Postgres) |
+> | V0.0.2.0 | Frontend polling the API | ✅ Shipped (Angular SPA, `HttpClient`, polling) |
+> | V0.0.3.0 | Grafana integration | ⛔ **Not shipped** — planned, issue #7 |
+> | V0.0.4.0 | WebSockets for real-time | ⛔ **Not shipped** — planned, issue #8 (currently polling) |
+> | V0.0.5.0 | Optional features | ◐ Partial |
+> | V0.0.6.0 | CI/CD pipeline | ✅ Shipped (GitHub Actions + CodeQL + Dependabot) |
+>
+> Since the MVP, the 360-audit refactor (epic #12) brought the code to a
+> production shape: Alembic migrations, a versioned `/api/v1` contract with
+> JSON errors and `/health`+`/ready`, a `src/sensor_api/` factory/blueprints
+> layout, ESLint/Prettier, and pre-commit hooks. The `flask-socketio`
+> dependency is a leftover from the original websocket exploration (the
+> `scripts/` folder) and is not used by the running app. For current state
+> see [ONBOARDING.md](../ONBOARDING.md), [PLAYBOOK.md](../PLAYBOOK.md), and
+> [dev-journal.md](../dev-journal.md).
+
 ## Overview
 
 ### Requirements

@@ -211,3 +211,5 @@ Thumbs.db
 
 # Environment variables
 .env.*
+# ...but the committed example is the documented template (CLAUDE.md 2.3).
+!.env.example
