@@ -2,9 +2,9 @@ import json
 import unittest
 from datetime import datetime
 
-from backend.app import create_app
-from backend.app.database import db
-from backend.app.models import SensorData
+from sensor_api import create_app
+from sensor_api.blueprints.sensors.models import SensorData
+from sensor_api.extensions import db
 
 SENSORS_URL = '/api/v1/sensors'
 

@@ -1,5 +1,5 @@
 import unittest
-from backend.app.sensors import DiscreteSensor, AnalogSensor
+from sensor_api.sensors import AnalogSensor, DiscreteSensor
 
 class TestDiscreteSensor(unittest.TestCase):
 

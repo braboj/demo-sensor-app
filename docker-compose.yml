@@ -25,7 +25,7 @@ services:
   worker:
     build:
       context: ./backend
-    command: ["python", "worker.py"]
+    command: ["python", "-m", "sensor_api.worker"]
     environment:
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/sensordb
       - APP_CONFIG=production
@@ -38,7 +38,7 @@ services:
     restart: unless-stopped
     # Liveness: confirm the worker process (PID 1) is still running.
     healthcheck:
-      test: ["CMD-SHELL", "grep -q worker.py /proc/1/cmdline"]
+      test: ["CMD-SHELL", "grep -q sensor_api.worker /proc/1/cmdline"]
       interval: 30s
       retries: 3
       start_period: 10s
@@ -89,7 +89,7 @@ services:
   migrate:
     build:
       context: ./backend
-    command: ["flask", "--app", "app:create_app", "db", "upgrade"]
+    command: ["flask", "--app", "sensor_api", "db", "upgrade"]
     environment:
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/sensordb
       - APP_CONFIG=production

@@ -1,5 +1,5 @@
 # encoding: utf-8
-"""Operational endpoints: shallow liveness and deep readiness.
+"""Root landing page plus operational liveness/readiness endpoints.
 
 ``/health`` answers "is the process up?" with no dependencies, so an
 orchestrator never restarts a healthy container just because the database
@@ -9,13 +9,20 @@ database, returning 503 when it cannot.
 import logging
 
 from flask import Blueprint, jsonify
+from markupsafe import escape
 from sqlalchemy import literal, select
 
-from .database import db
+from ...extensions import db
 
 log = logging.getLogger(__name__)
 
 health = Blueprint('health', __name__)
+
+
+@health.route('/')
+def home():
+    """Root landing page for the backend service."""
+    return escape('Backend server is running!')
 
 
 @health.route('/health')

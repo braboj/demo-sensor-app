@@ -1,5 +1,5 @@
 import random
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 
 from .errors import BackendError
 
@@ -228,31 +228,5 @@ class AnalogSensor(_SensorBase, _SensorAbc):
         # Return the validated sensor instance
         return self
 
+
 __all__ = ['DiscreteSensor', 'AnalogSensor']
-
-
-def demo():
-    """Demo script to show how to use the sensor classes."""
-
-    import time
-
-    # Create the sensor objects
-    position = DiscreteSensor('ZSS1R01A', low_limit=-1, high_limit=1)
-    temperature = AnalogSensor('TIS1P01A', low_limit=0.0, high_limit=100.0)
-
-    # Sample the sensor data
-    for _ in range(10):
-
-        # Read and print the sensor data
-        position.read()
-        print(position)
-
-        # Read and print the sensor data
-        temperature.read()
-        print(temperature)
-
-        # Wait before the next sample
-        time.sleep(1)
-
-if __name__ == '__main__':
-    demo()

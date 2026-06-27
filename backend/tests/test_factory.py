@@ -1,6 +1,6 @@
 import unittest
 
-from backend.app import create_app
+from sensor_api import create_app
 
 class TestAppFactory(unittest.TestCase):
 

@@ -1,5 +1,6 @@
 # encoding: utf-8
-from .database import db
+from ...extensions import db
+
 
 class SensorData(db.Model):
     """Basic sensor data model with temperature, humidity, and vibration.
