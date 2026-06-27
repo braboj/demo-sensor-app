@@ -1,9 +1,9 @@
 # Introduction
 
-This project demonstrates a full-stack application simulating sensor 
-readings from an industrial plant, with a Python backend generating data, 
-storing it in a database, and exposing it via an API. A frontend application
-will display the data and allow users to interact with it.
+This project demonstrates a full-stack application simulating sensor
+readings from an industrial plant: a Python (Flask) backend generates data
+via a standalone worker, stores it in PostgreSQL, and exposes it via a
+versioned REST API; an Angular frontend displays it.
 
 ## Requirements
 
@@ -35,10 +35,11 @@ the application:
 docker compose up
 ```
 
-The following services will be started:
+The following services will be started (plus a PostgreSQL database, a
+one-shot migration step, and the data-generator worker):
 
 - [Frontend (Angular) / localhost:4200](http://localhost:4200)
-- [Backend (Flask) / localhsot:5000](http://localhost:5000)
+- [Backend (Flask) / localhost:5000](http://localhost:5000)
 
 The backend exposes a versioned endpoint to retrieve sensor data:
 
@@ -56,7 +57,11 @@ curl http://localhost:5000/api/v1/sensors?limit=1
 
 Operational endpoints: `GET /health` (liveness — 200 if the process is up)
 and `GET /ready` (readiness — 200 if the database is reachable, else 503).
+
 ## Next Steps
+
+- To set up a dev environment, see [Onboarding](docs/ONBOARDING.md)
+- For day-to-day commands, see the [Playbook](docs/PLAYBOOK.md)
 - To learn more about the project, please visit [Assignment](docs/history/ASSIGNMENT.md)
 - To read about the solution, please visit [Solution](docs/history/SOLUTION.md)
 - To contribute, please visit [Contributing](CONTRIBUTING.md)
