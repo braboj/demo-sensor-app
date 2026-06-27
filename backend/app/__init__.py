@@ -2,6 +2,8 @@ from flask import Flask
 from flask_cors import CORS
 from .config import get_config, split_origins
 from .routes import api, main
+from .health import health
+from .errors import register_error_handlers
 from .database import db, migrate
 from . import models  # noqa: F401  -- register models on the metadata for Alembic
 
@@ -22,6 +24,10 @@ def create_app(test_config=None):
     # Register the routes with the app
     app.register_blueprint(main)
     app.register_blueprint(api)
+    app.register_blueprint(health)
+
+    # Render errors as JSON (RFC 9457-style), not Werkzeug HTML.
+    register_error_handlers(app)
 
     # Initialize the database and migration engine. Schema comes from
     # Alembic migrations (`flask db upgrade`), never db.create_all() — the

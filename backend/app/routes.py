@@ -1,15 +1,17 @@
 # encoding: utf-8
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, abort, jsonify, request
 from markupsafe import escape
-from .services import SensorService
 
-# Define the blueprints for the index and API
+from .services import DEFAULT_LIMIT, MAX_LIMIT, MIN_LIMIT, SensorService
+
+# A tiny root page plus the versioned JSON API.
 main = Blueprint('main', __name__)
-api = Blueprint('api', __name__, url_prefix='/api')
+api = Blueprint('api', __name__, url_prefix='/api/v1')
+
 
 @main.route('/')
 def home():
-    """Route to the home page.
+    """Root landing page for the backend service.
 
     Example:
         http://localhost:5000/
@@ -17,25 +19,43 @@ def home():
 
     return escape('Backend server is running!')
 
+
+def _parse_limit():
+    """Validate the ?limit= query parameter at the boundary.
+
+    Returns a bounded integer in ``[MIN_LIMIT, MAX_LIMIT]``. A missing value
+    falls back to ``DEFAULT_LIMIT``; a non-integer or out-of-range value is
+    rejected with ``400`` — never silently coerced to a default.
+    """
+    raw = request.args.get('limit')
+    if raw is None:
+        return DEFAULT_LIMIT
+
+    try:
+        limit = int(raw)
+    except (TypeError, ValueError):
+        abort(400, description="The 'limit' parameter must be an integer")
+
+    if limit < MIN_LIMIT or limit > MAX_LIMIT:
+        abort(
+            400,
+            description=(
+                f"The 'limit' parameter must be between "
+                f"{MIN_LIMIT} and {MAX_LIMIT}"
+            ),
+        )
+
+    return limit
+
+
 @api.route('/sensors', methods=['GET'])
 def get_all_sensors():
-    """Route to get all sensor data with optional limit query parameter.
+    """Return the most recent sensor readings, newest first.
 
     Example:
-        http://localhost:5000/api/sensors?limit=10
+        http://localhost:5000/api/v1/sensors?limit=10
     """
 
-    # Get the limit query parameter
-    limit = request.args.get('limit', default=100, type=int)
-
-    # Check if the limit is too high
-    if not isinstance(limit, int) or limit < 1 or limit > 100:
-
-        # Send a 400 Bad Request response
-        abort(400, description="The value of 'limit' must be between 1 and 100")
-
-    # Fetch the sensor data from the database
+    limit = _parse_limit()
     data = SensorService.fetch_data(limit)
-
-    # Return the sensor data as JSON
     return jsonify(data)
