@@ -1,10 +1,8 @@
-import threading
 from flask import Flask
 from flask_cors import CORS
 from .config import get_config, split_origins
 from .routes import api, main
 from .database import db
-from .services import SensorService
 
 def create_app(test_config=None):
 
@@ -27,17 +25,11 @@ def create_app(test_config=None):
     # Initialize the database
     db.init_app(app)
 
-    # Create the database tables
+    # Create the database tables. This stays until Alembic migrations land
+    # (#22); the factory must otherwise do wiring only. The sensor data
+    # generator runs as a separate worker process (worker.py), never a
+    # thread spawned here.
     with app.app_context():
         db.create_all()
-
-    # Start the sensor data generation thread
-    with app.app_context():
-        sensor_thread = threading.Thread(
-            target=SensorService.generate_data,
-            args=(app,)
-        )
-        sensor_thread.daemon = True
-        sensor_thread.start()
 
     return app

@@ -1,38 +1,47 @@
 from .models import SensorData
 from .database import db
 from .sensors import AnalogSensor, DiscreteSensor
-import time
 
 
 class SensorService(object):
     """Service class for handling sensor data."""
 
     @staticmethod
-    def generate_data(app):
-        """Thread to generate sensor data and store it in the database."""
+    def build_sensors():
+        """Construct the simulated field sensors.
 
-        # Create the simulated field sensors
-        temperature = AnalogSensor('temperature')
-        humidity = AnalogSensor('humidity')
-        vibration = DiscreteSensor('vibration')
+        Built once by the worker and reused across samples so each sensor
+        keeps its own state between readings.
+        """
+        return (
+            AnalogSensor('temperature'),
+            AnalogSensor('humidity'),
+            DiscreteSensor('vibration'),
+        )
 
-        # Thread loop
-        while True:
+    @staticmethod
+    def record_reading(sensors):
+        """Sample the sensors and persist a single reading.
 
-            # Sample time is fixed to 10 seconds
-            time.sleep(10)
+        Requires an active app context. On failure the session is rolled
+        back so it is never left poisoned, and the error is re-raised for
+        the caller to log.
+        """
+        temperature, humidity, vibration = sensors
+        reading = SensorData(
+            temperature=temperature.read(),
+            humidity=humidity.read(),
+            vibration=vibration.read()
+        )
 
-            # Map the readings to the database model
-            sensor_data = SensorData(
-                temperature=temperature.read(),
-                humidity=humidity.read(),
-                vibration=vibration.read()
-            )
+        try:
+            db.session.add(reading)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
 
-            # Store the readings in the database
-            with app.app_context():
-                db.session.add(sensor_data)
-                db.session.commit()
+        return reading
 
     @staticmethod
     def fetch_data(limit=100):

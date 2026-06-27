@@ -13,6 +13,19 @@ services:
       db:
         condition: service_healthy
 
+  worker:
+    build:
+      context: ./backend
+    command: ["python", "worker.py"]
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/sensordb
+      - APP_CONFIG=production
+      - SAMPLE_INTERVAL_SECONDS=10
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend

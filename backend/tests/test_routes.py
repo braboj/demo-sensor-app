@@ -1,7 +1,14 @@
-import time
 import unittest
 from backend.app import create_app
 from backend.app.database import db
+from backend.app.models import SensorData
+
+
+def _reading(temperature=20.0, humidity=50.0, vibration=0):
+    """Build a SensorData row for seeding tests directly."""
+    return SensorData(
+        temperature=temperature, humidity=humidity, vibration=vibration
+    )
 
 
 class FlaskRouteTestCase(unittest.TestCase):
@@ -26,7 +33,6 @@ class FlaskRouteTestCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         cls.app_context.pop()
-        time.sleep(1)
 
     def setUp(self):
         """Run before each test."""
@@ -49,40 +55,32 @@ class FlaskRouteTestCase(unittest.TestCase):
         response = self.client.get('/notfound')
         self.assertEqual(404, response.status_code)
 
-    def test_api_sensors_route(self):
-        """Test the api/sensors route."""
+    def test_api_sensors_returns_seeded_rows(self):
+        """All seeded readings are returned by default."""
+        db.session.add_all([_reading(), _reading(vibration=1)])
+        db.session.commit()
 
-        # Wait for the first reading to be generated
-        time.sleep(11)
-
-        # Get the first reading
         response = self.client.get('/api/sensors')
         self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.get_json()))
 
-        # Check the response length
-        sample_01 = response.get_json()
-        self.assertEqual(1, len(sample_01))
-
-        # Wait for another reading to be generated
-        time.sleep(11)
-
-        # Get the next reading
+    def test_api_sensors_empty_returns_empty_list(self):
+        """With no data the route returns 200 and an empty list."""
         response = self.client.get('/api/sensors')
         self.assertEqual(200, response.status_code)
+        self.assertEqual([], response.get_json())
 
-        # Check the response length
-        sample_02 = response.get_json()
-        self.assertEqual(2, len(sample_02))
+    def test_api_sensors_limit_caps_results(self):
+        """The limit query parameter caps the number of rows returned."""
+        db.session.add_all([_reading() for _ in range(3)])
+        db.session.commit()
 
-        # Get a new reading with a limit
         response = self.client.get('/api/sensors?limit=1')
         self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(response.get_json()))
 
-        # Check the response length
-        sample_03 = response.get_json()
-        self.assertEqual(1, len(sample_03))
-
-        # Test the limit query parameter
-        for test_val in (-1, 101):
+    def test_api_sensors_limit_out_of_range_returns_400(self):
+        """A limit outside the 1-100 bounds is rejected with 400."""
+        for test_val in (-1, 0, 101):
             response = self.client.get(f'/api/sensors?limit={test_val}')
             self.assertEqual(400, response.status_code)
