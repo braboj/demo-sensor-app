@@ -1,5 +1,6 @@
-# Use the official Node.js image as the base image
-FROM node:alpine
+# Use the official Node.js image as the base image — pinned, not floating.
+# (The multi-stage nginx production build is handled in #17.)
+FROM node:22-alpine
 
 # Set the working directory inside the container
 WORKDIR /app

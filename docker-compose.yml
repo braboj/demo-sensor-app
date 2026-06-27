@@ -12,6 +12,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 10s
+      retries: 5
+      start_period: 15s
+      timeout: 5s
 
   worker:
     build:
@@ -25,6 +32,13 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    # Liveness: confirm the worker process (PID 1) is still running.
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q worker.py /proc/1/cmdline"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   frontend:
     build:
@@ -35,18 +49,29 @@ services:
     # runtime env var (the old REACT_APP_BACKEND_URL was a React var, never
     # read by this Angular app).
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:4200/ || exit 1"]
+      interval: 15s
+      retries: 5
+      # ng serve compiles on first boot, so allow generous start-up time.
+      start_period: 60s
+      timeout: 5s
 
   db:
-    image: postgres:13
+    image: postgres:16
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: sensordb
-    ports:
-      - "5432:5432"
+    # The DB port is intentionally not published to the host. Services reach
+    # it over the compose network as db:5432; for host access use
+    # `docker compose exec db psql -U postgres -d sensordb`.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "sensordb"]
       interval: 10s

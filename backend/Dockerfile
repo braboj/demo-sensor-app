@@ -1,5 +1,5 @@
-# Base image
-FROM python:3.9-slim
+# Base image — pinned, current (3.9 reached EOL Oct 2025).
+FROM python:3.12-slim
 
 # Set the working directory
 WORKDIR /app
