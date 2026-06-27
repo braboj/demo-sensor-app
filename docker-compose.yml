@@ -12,6 +12,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
@@ -31,6 +33,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     # Liveness: confirm the worker process (PID 1) is still running.
     healthcheck:
@@ -77,6 +81,22 @@ services:
       retries: 5
       start_period: 10s
       timeout: 5s
+
+  # One-shot schema migration. Runs `flask db upgrade` once the DB is
+  # healthy, then exits; backend and worker wait for it to complete
+  # successfully (schema comes from Alembic, never db.create_all()). Reuses
+  # the backend image, so it already has the code and migrations/.
+  migrate:
+    build:
+      context: ./backend
+    command: ["flask", "--app", "app:create_app", "db", "upgrade"]
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/sensordb
+      - APP_CONFIG=production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
 volumes:
   postgres_data:

@@ -10,7 +10,9 @@ In the future, this module could be used to implement database handling
 functions, such as database initialization, cleanup, and migrations.
 """
 
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-# Global database object
+# Global extension objects, initialised against the app inside create_app.
 db = SQLAlchemy()
+migrate = Migrate()
