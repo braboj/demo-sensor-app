@@ -1,0 +1,7 @@
+# Backend tooling config. The package lives under ``src/`` (src layout), so
+# ``pythonpath = ["src"]`` makes ``sensor_api`` importable in tests without an
+# editable install. Run pytest and ruff from this directory (``backend/``).
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -17,6 +17,9 @@ jobs:
   backend:
     name: Backend (ruff + pytest)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v7
 
@@ -29,15 +32,15 @@ jobs:
             backend/requirements-dev.txt
 
       - name: Install dependencies
-        run: pip install -r backend/requirements-dev.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Lint (ruff)
-        run: ruff check backend
+        run: ruff check .
 
       - name: Test (pytest)
         run: pytest
       # NOTE: `mypy --strict` is not gated yet — the backend is not fully
-      # annotated. It joins this job once the type hints land (#24).
+      # type-annotated. It joins this job once the annotations land.
 
   frontend:
     name: Frontend (build)

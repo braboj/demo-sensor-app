@@ -5,15 +5,15 @@ exactly one generator regardless of how many gunicorn workers serve the
 API, and none runs during tests or under the dev reloader. It owns its own
 app context and DB session, and rolls back on a failed insert.
 
-Run locally:   python worker.py
-In compose:    command: ["python", "worker.py"]
+Run locally:   python -m sensor_api.worker
+In compose:    command: ["python", "-m", "sensor_api.worker"]
 """
 import logging
 import os
 import time
 
-from app import create_app
-from app.services import SensorService
+from sensor_api import create_app
+from sensor_api.blueprints.sensors.services import SensorService
 
 logging.basicConfig(
     level=logging.INFO,

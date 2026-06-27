@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch
 
-from backend.app import create_app
-from backend.app.database import db
+from sensor_api import create_app
+from sensor_api.extensions import db
 
 
 class HealthEndpointTestCase(unittest.TestCase):

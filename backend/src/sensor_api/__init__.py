@@ -1,13 +1,20 @@
 from flask import Flask
 from flask_cors import CORS
+
+from .blueprints.health import health
+from .blueprints.sensors import api
 from .config import get_config, split_origins
-from .routes import api, main
-from .health import health
 from .errors import register_error_handlers
-from .database import db, migrate
-from . import models  # noqa: F401  -- register models on the metadata for Alembic
+from .extensions import db, migrate
+
 
 def create_app(test_config=None):
+    """Application factory — wiring only (config, extensions, blueprints).
+
+    No global app, no threads, no db.create_all(): the schema comes from
+    Alembic migrations and the data generator runs as a separate worker
+    process (``python -m sensor_api.worker``).
+    """
 
     app = Flask(__name__, instance_relative_config=True)
 
@@ -21,18 +28,14 @@ def create_app(test_config=None):
     origins = split_origins(app.config.get('CORS_ORIGINS'))
     CORS(app, resources={r"/api/*": {"origins": origins}})
 
-    # Register the routes with the app
-    app.register_blueprint(main)
+    # Register the domain blueprints.
     app.register_blueprint(api)
     app.register_blueprint(health)
 
     # Render errors as JSON (RFC 9457-style), not Werkzeug HTML.
     register_error_handlers(app)
 
-    # Initialize the database and migration engine. Schema comes from
-    # Alembic migrations (`flask db upgrade`), never db.create_all() — the
-    # factory does wiring only. The sensor data generator runs as a separate
-    # worker process (worker.py), never a thread spawned here.
+    # Initialise the database and migration engine against the app.
     db.init_app(app)
     migrate.init_app(app, db)
 
