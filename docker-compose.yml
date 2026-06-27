@@ -43,21 +43,20 @@ services:
   frontend:
     build:
       context: ./frontend
+    # nginx serves the production bundle on port 80 and proxies /api to the
+    # backend (see frontend/nginx.conf). The API base URL is a build-time
+    # setting in src/environments/* — not a runtime env var.
     ports:
-      - "4200:4200"
-    # The API base URL is a build-time setting in src/environments/*, not a
-    # runtime env var (the old REACT_APP_BACKEND_URL was a React var, never
-    # read by this Angular app).
+      - "4200:80"
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:4200/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:80/ || exit 1"]
       interval: 15s
       retries: 5
-      # ng serve compiles on first boot, so allow generous start-up time.
-      start_period: 60s
+      start_period: 10s
       timeout: 5s
 
   db:
