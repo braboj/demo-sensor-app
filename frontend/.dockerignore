@@ -1,0 +1,17 @@
+# Dependencies & build output (npm ci installs cleanly inside the image)
+node_modules/
+.angular/
+dist/
+
+# Leftover tutorial scaffold & mock data
+.tutorial/
+db.json
+
+# VCS / IDE / docs / logs
+.git/
+.gitignore
+.idea/
+.vscode/
+*.md
+npm-debug.log*
+yarn-error.log*

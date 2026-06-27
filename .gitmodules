@@ -1,0 +1,3 @@
+[submodule "docs"]
+	path = docs/solid-ai-templates
+	url = https://github.com/braboj/solid-ai-templates.git
