@@ -1,0 +1,48 @@
+# Layer-2 quality gates (see CLAUDE.md 3.2). These mirror the CI gates so
+# problems are caught before they are pushed.
+#
+#   pip install pre-commit      # once
+#   pre-commit install          # enable the git hook
+#   pre-commit run --all-files  # run against the whole repo
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  # Python lint — same as CI (`ruff check backend`).
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+        files: ^backend/
+
+  # Secret scanning — same as CI (gitleaks).
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  # Frontend lint + format — same as CI (`npm run lint` / `format:check`).
+  # Local hooks so they use the project's pinned toolchain in frontend/.
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint (frontend)
+        language: system
+        entry: bash -c 'cd frontend && npm run lint'
+        files: ^frontend/.*\.(ts|html)$
+        pass_filenames: false
+      - id: prettier
+        name: prettier (frontend)
+        language: system
+        entry: bash -c 'cd frontend && npm run format:check'
+        files: ^frontend/src/.*\.(ts|html|css|json)$
+        pass_filenames: false
+
+# NOTE: mypy is intentionally not enabled yet. The backend is not fully
+# type-annotated and db.Model / flask_migrate need typing work first — the
+# same reason CI defers `mypy --strict`. Add a mypy hook here once the
+# annotations land.
