@@ -53,7 +53,7 @@ records to return by passing a query parameter:
 curl http://localhost:5000/api/sensors?limit=1
 ```
 ## Next Steps
-- To learn more about the project, please visit [Assigment](ASSIGNMENT.md)
-- To read about the solution, please visit [Solution](SOLUTION)
+- To learn more about the project, please visit [Assignment](docs/history/ASSIGNMENT.md)
+- To read about the solution, please visit [Solution](docs/history/SOLUTION.md)
 - To contribute, please visit [Contributing](CONTRIBUTING.md)
-- To leave feedback, please visit [Discussions](https://github.com/braboj/the-great-wall/discussions)
+- To leave feedback, please visit [Discussions](https://github.com/braboj/sensor-data-app/discussions)
