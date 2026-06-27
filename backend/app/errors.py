@@ -38,7 +38,7 @@ def demo():
 
     try:
         raise BackendError(
-            message=f"My error message",
+            message="My error message",
             context=f"expected {int.__name__}, got {type(1.0).__name__}"
         )
 

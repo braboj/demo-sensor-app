@@ -32,7 +32,7 @@ def get_all_sensors():
     if not isinstance(limit, int) or limit < 1 or limit > 100:
 
         # Send a 400 Bad Request response
-        abort(400, description=f"The value of 'limit' must be between 1 and 100")
+        abort(400, description="The value of 'limit' must be between 1 and 100")
 
     # Fetch the sensor data from the database
     data = SensorService.fetch_data(limit)
