@@ -31,8 +31,9 @@ services:
       context: ./frontend
     ports:
       - "4200:4200"
-    environment:
-      - REACT_APP_BACKEND_URL=http://localhost:5000
+    # The API base URL is a build-time setting in src/environments/*, not a
+    # runtime env var (the old REACT_APP_BACKEND_URL was a React var, never
+    # read by this Angular app).
     depends_on:
       - backend
 

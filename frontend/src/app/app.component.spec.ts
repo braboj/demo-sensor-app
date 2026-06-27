@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 import { AppComponent } from './app.component';
 import { SensorService } from './sensors.service';
 
-// Stub the service so rendering <app-home> does not trigger a real fetch.
+// Stub the service so rendering <app-home> does not trigger a real request.
 const sensorServiceStub: Partial<SensorService> = {
-  getAllSensorData: () => Promise.resolve([]),
+  getAllSensorData: () => of([]),
 };
 
 describe('AppComponent', () => {

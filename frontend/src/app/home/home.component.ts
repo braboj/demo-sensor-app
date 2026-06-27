@@ -1,7 +1,8 @@
-import {Component, inject} from '@angular/core';
+import {Component, OnInit, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {catchError, of} from 'rxjs';
 import {SensorService} from '../sensors.service';
-import {SensorData} from "../sensordata";
+import {SensorData} from '../sensordata';
 
 @Component({
   selector: 'app-home',
@@ -10,18 +11,28 @@ import {SensorData} from "../sensordata";
   /**
    * HomeComponent displays the latest sensor data in a table.
    *
-   * This component fetches sensor data from the SensorService when it is created.
-   * The data is then displayed in a table and sorted by timestamp, with the most
-   * recent data at the top.
+   * Data is loaded once in ngOnInit via the SensorService. The view renders
+   * explicit loading, error, and empty states so a failed or empty response
+   * never leaves a silent blank table.
    */
 
   template: `
     <section class="results">
-      
+
       <h2>Latest Sensor Data (Hit F5 to refresh, new data every 10 seconds)</h2>
-      
-      <table>
-        
+
+      <p *ngIf="loading" class="status" role="status">Loading sensor data…</p>
+
+      <p *ngIf="error" class="status status-error" role="alert">
+        Could not load sensor data. Please try again later.
+      </p>
+
+      <p *ngIf="!loading && !error && sensorDataList.length === 0" class="status">
+        No sensor data available yet.
+      </p>
+
+      <table *ngIf="!loading && !error && sensorDataList.length > 0">
+
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -30,7 +41,7 @@ import {SensorData} from "../sensordata";
             <th>Vibration</th>
           </tr>
         </thead>
-        
+
         <tbody>
           <tr *ngFor="let sensor of sensorDataList">
             <td>{{ sensor.timestamp }}</td>
@@ -40,29 +51,36 @@ import {SensorData} from "../sensordata";
           </tr>
         </tbody>
       </table>
-      
+
     </section>
   `,
   styleUrls: ['./home.component.css'],
 })
-
-export class HomeComponent {
+export class HomeComponent implements OnInit {
 
   // List of sensor data
   sensorDataList: SensorData[] = [];
 
-  // Inject the sensor service
-  sensorService: SensorService = inject(SensorService);
+  // View state flags
+  loading = true;
+  error = false;
 
-  // When the component is created, get all sensor data
-  constructor() {
-    this.sensorService.getAllSensorData().then((sensorDataList: SensorData[]) => {
-      this.sensorDataList = sensorDataList;
-    });
+  // Inject the sensor service
+  private readonly sensorService = inject(SensorService);
+
+  // Load data once when the component initializes
+  ngOnInit(): void {
+    this.sensorService
+      .getAllSensorData()
+      .pipe(
+        catchError(() => {
+          this.error = true;
+          return of([] as SensorData[]);
+        }),
+      )
+      .subscribe((sensorDataList: SensorData[]) => {
+        this.sensorDataList = sensorDataList;
+        this.loading = false;
+      });
   }
 }
-
-
-
-
-

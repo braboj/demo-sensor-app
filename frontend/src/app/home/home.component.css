@@ -14,3 +14,15 @@ th, td {
 th {
     background-color: #f4f4f4;
 }
+
+.status {
+    margin: 20px 0;
+    font-style: italic;
+    color: #555;
+}
+
+.status-error {
+    color: #b00020;
+    font-style: normal;
+    font-weight: 600;
+}
