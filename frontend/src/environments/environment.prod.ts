@@ -3,5 +3,5 @@
 // backend (see the nginx setup in #17 / deployment in #29).
 export const environment = {
   production: true,
-  apiUrl: '/api/sensors',
+  apiUrl: '/api/v1/sensors',
 };

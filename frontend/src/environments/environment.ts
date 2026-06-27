@@ -3,5 +3,5 @@
 export const environment = {
   production: false,
   // Backend sensors endpoint. The dev backend is exposed on localhost:5000.
-  apiUrl: 'http://localhost:5000/api/sensors',
+  apiUrl: 'http://localhost:5000/api/v1/sensors',
 };

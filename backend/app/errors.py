@@ -1,4 +1,19 @@
 # encoding: utf-8
+"""Application error types and JSON error handlers.
+
+The API speaks JSON, so every error — aborts, 404s, and uncaught
+exceptions — is rendered as an RFC 9457-style problem object
+(``application/problem+json``) instead of Werkzeug's default HTML page.
+"""
+import logging
+
+from flask import jsonify
+from werkzeug.exceptions import HTTPException
+
+log = logging.getLogger(__name__)
+
+PROBLEM_CONTENT_TYPE = "application/problem+json"
+
 
 class BackendError(Exception):
     """Base class for exceptions in the backend.
@@ -33,18 +48,32 @@ class BackendError(Exception):
         return str(self)
 
 
-def demo():
-    """Demonstrates how to use the BackendError class."""
+def _problem(title, status, detail):
+    """Build a JSON problem response with the RFC 9457 media type."""
+    response = jsonify({"title": title, "status": status, "detail": detail})
+    response.status_code = status
+    response.content_type = PROBLEM_CONTENT_TYPE
+    return response
 
-    try:
-        raise BackendError(
-            message="My error message",
-            context=f"expected {int.__name__}, got {type(1.0).__name__}"
+
+def register_error_handlers(app):
+    """Register JSON error handlers on the Flask app."""
+
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(exc):
+        """Render aborts and HTTP errors (400/404/405/...) as JSON."""
+        return _problem(exc.name, exc.code or 500, exc.description)
+
+    @app.errorhandler(BackendError)
+    def handle_backend_error(exc):
+        """Render an unexpected domain error as a generic JSON 500.
+
+        The detail is generic so internal context is never leaked to the
+        client; the actual error is logged once here.
+        """
+        log.error("unhandled backend error: %s", exc)
+        return _problem(
+            "Internal Server Error", 500, "An internal error occurred."
         )
 
-    except BackendError as e:
-        print(e)
-
-
-if __name__ == '__main__':
-    demo()
+    return app

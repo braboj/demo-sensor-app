@@ -1,7 +1,12 @@
+import json
 import unittest
+from datetime import datetime
+
 from backend.app import create_app
 from backend.app.database import db
 from backend.app.models import SensorData
+
+SENSORS_URL = '/api/v1/sensors'
 
 
 def _reading(temperature=20.0, humidity=50.0, vibration=0):
@@ -60,13 +65,13 @@ class FlaskRouteTestCase(unittest.TestCase):
         db.session.add_all([_reading(), _reading(vibration=1)])
         db.session.commit()
 
-        response = self.client.get('/api/sensors')
+        response = self.client.get(SENSORS_URL)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.get_json()))
 
     def test_api_sensors_empty_returns_empty_list(self):
         """With no data the route returns 200 and an empty list."""
-        response = self.client.get('/api/sensors')
+        response = self.client.get(SENSORS_URL)
         self.assertEqual(200, response.status_code)
         self.assertEqual([], response.get_json())
 
@@ -75,12 +80,40 @@ class FlaskRouteTestCase(unittest.TestCase):
         db.session.add_all([_reading() for _ in range(3)])
         db.session.commit()
 
-        response = self.client.get('/api/sensors?limit=1')
+        response = self.client.get(f'{SENSORS_URL}?limit=1')
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, len(response.get_json()))
 
     def test_api_sensors_limit_out_of_range_returns_400(self):
         """A limit outside the 1-100 bounds is rejected with 400."""
         for test_val in (-1, 0, 101):
-            response = self.client.get(f'/api/sensors?limit={test_val}')
+            response = self.client.get(f'{SENSORS_URL}?limit={test_val}')
             self.assertEqual(400, response.status_code)
+
+    def test_api_sensors_non_integer_limit_returns_400(self):
+        """A non-integer limit is rejected with 400, never coerced."""
+        for test_val in ('abc', '1.5', ''):
+            response = self.client.get(f'{SENSORS_URL}?limit={test_val}')
+            self.assertEqual(400, response.status_code)
+
+    def test_api_sensors_error_response_is_json_problem(self):
+        """Errors are JSON (RFC 9457-style), not Werkzeug HTML."""
+        response = self.client.get(f'{SENSORS_URL}?limit=abc')
+        self.assertEqual(400, response.status_code)
+        self.assertIn('application/problem+json', response.content_type)
+        body = json.loads(response.get_data(as_text=True))
+        self.assertEqual(400, body['status'])
+        self.assertIn('detail', body)
+
+    def test_api_sensors_timestamp_is_iso8601_utc(self):
+        """Timestamps serialize as ISO-8601 UTC strings, not RFC-1123."""
+        db.session.add(_reading())
+        db.session.commit()
+
+        response = self.client.get(SENSORS_URL)
+        self.assertEqual(200, response.status_code)
+        timestamp = response.get_json()[0]['timestamp']
+
+        self.assertIsInstance(timestamp, str)
+        parsed = datetime.fromisoformat(timestamp)
+        self.assertIsNotNone(parsed.tzinfo)
