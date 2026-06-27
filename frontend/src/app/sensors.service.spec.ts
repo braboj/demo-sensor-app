@@ -1,20 +1,34 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { SensorService } from './sensors.service';
 import { SensorData } from './sensordata';
+import { environment } from '../environments/environment';
 
 describe('SensorService', () => {
   let service: SensorService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(SensorService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('fetches sensor data from the API URL', async () => {
+  it('GETs sensor data from the configured API URL', () => {
     const rows: SensorData[] = [
       {
         id: 1,
@@ -24,21 +38,29 @@ describe('SensorService', () => {
         vibration: 0,
       },
     ];
-    const fetchSpy = spyOn(window, 'fetch').and.resolveTo(
-      new Response(JSON.stringify(rows), { status: 200 }),
-    );
 
-    const result = await service.getAllSensorData();
+    let result: SensorData[] | undefined;
+    service.getAllSensorData().subscribe((data) => (result = data));
 
-    expect(fetchSpy).toHaveBeenCalledWith(service.url);
+    const req = httpMock.expectOne(environment.apiUrl);
+    expect(req.request.method).toBe('GET');
+    req.flush(rows);
+
     expect(result).toEqual(rows);
   });
 
-  it('returns an empty array when the API responds with null', async () => {
-    spyOn(window, 'fetch').and.resolveTo(new Response('null', { status: 200 }));
+  it('propagates an error response to the caller', () => {
+    let errored = false;
+    service.getAllSensorData().subscribe({
+      next: () => {},
+      error: () => (errored = true),
+    });
 
-    const result = await service.getAllSensorData();
+    httpMock.expectOne(environment.apiUrl).flush('fail', {
+      status: 500,
+      statusText: 'Server Error',
+    });
 
-    expect(result).toEqual([]);
+    expect(errored).toBeTrue();
   });
 });

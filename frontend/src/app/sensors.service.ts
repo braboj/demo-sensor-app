@@ -1,22 +1,26 @@
-import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Injectable, inject} from '@angular/core';
+import {Observable} from 'rxjs';
+import {environment} from '../environments/environment';
 import {SensorData} from './sensordata';
 
 @Injectable({
   providedIn: 'root',
 })
-
 export class SensorService {
   /**
-   * Fetches all sensor data from the API.
+   * Fetches sensor data from the backend API over HttpClient.
    *
-   * @returns A promise that resolves to an array of SensorData objects.
+   * Errors are intentionally not swallowed here — callers handle them with
+   * `catchError` so they can render an explicit error state.
    */
 
-  // The URL of the sensor data API */
-  readonly url = 'http://localhost:5000/api/sensors';
+  private readonly http = inject(HttpClient);
 
-  async getAllSensorData(): Promise<SensorData[]> {
-    const data = await fetch(this.url);
-    return (await data.json()) ?? [];
+  // The sensors endpoint, from the build-time environment config.
+  readonly url = environment.apiUrl;
+
+  getAllSensorData(): Observable<SensorData[]> {
+    return this.http.get<SensorData[]>(this.url);
   }
 }
