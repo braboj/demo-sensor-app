@@ -18,10 +18,27 @@ def split_origins(raw: str | None) -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
+def normalize_database_url(url: str) -> str:
+    """Normalise a database URL for SQLAlchemy 2.x.
+
+    Managed Postgres providers (e.g. Render) hand out URLs with the legacy
+    ``postgres://`` scheme, which SQLAlchemy 2.x no longer recognises. Rewrite
+    that prefix to ``postgresql://`` so the psycopg2 driver is selected. Every
+    other scheme — including the ``postgresql+psycopg2://`` used by compose and
+    the ``sqlite://`` used by tests — passes through unchanged.
+    """
+    legacy_prefix = "postgres://"
+    if url.startswith(legacy_prefix):
+        return "postgresql://" + url[len(legacy_prefix):]
+    return url
+
+
 class BaseConfig:
     """Settings shared across every environment."""
 
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///test.db")
+    SQLALCHEMY_DATABASE_URI = normalize_database_url(
+        os.getenv("DATABASE_URL", "sqlite:///test.db")
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv("SECRET_KEY")
     # Comma-separated list of allowed frontend origins (see split_origins).
