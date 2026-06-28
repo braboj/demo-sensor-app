@@ -2,8 +2,6 @@
 
 A session-by-session log of significant work. Newest entry first.
 
----
-
 ## 2026-06-27 — P2 architecture/API/polish + repo hardening
 
 **Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
@@ -48,8 +46,6 @@ added `docs/ONBOARDING.md`; expanded `docs/PLAYBOOK.md`; un-ignored
 ### Next
 P2 complete. Remaining: features (#7 Grafana, #8 websockets) and the Render
 deploy (#29) — run the Docker smoke test first.
-
----
 
 ## 2026-06-27 — P0 security + P1 correctness / CI / containers
 

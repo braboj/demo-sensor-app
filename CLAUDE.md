@@ -31,8 +31,6 @@ chain (`stack-flask` + frontend layer + platform):
 - Platform & process: `platform/github.md`, `base/workflow/scope.md`,
   `base/workflow/360.md`
 
----
-
 ## 1. Project
 
 ### 1.1 Overview
@@ -143,8 +141,6 @@ npm run build                          # production build -> dist/sensor-app
 npm test                               # Karma + Jasmine (needs a test target)
 npx eslint .                           # lint
 ```
-
----
 
 ## 2. Code conventions
 
@@ -274,7 +270,12 @@ npx eslint .                           # lint
   not expose the DB port to the host in production. Secrets via env, not
   literals.
 
----
+### 2.10 Documentation
+
+- Write docs (README, `docs/*.md`, ADRs, PR/issue bodies) with heading
+  hierarchy and blank-line spacing for structure; do **not** use `---`
+  horizontal rules as decorative section separators. Reserve `---` for where
+  it is structural (YAML/TOML frontmatter, fenced code).
 
 ## 3. Quality
 
@@ -313,15 +314,11 @@ npx eslint .                           # lint
   (`contents: read`). Full framework: `base/security/security.md`,
   `base/security/devsecops.md`.
 
----
-
 ## 4. Identity
 
 Minimal. The frontend is a functional dashboard; follow `frontend/ux.md`
 for layout/accessibility. No formal brand system — keep styling
 consistent and the table readable.
-
----
 
 ## 5. Review process
 
@@ -352,8 +349,6 @@ Confirm CI is green before merge.
   has a reversible migration.
 - Run a full 360 (`base/workflow/360.md`) after a milestone or before a
   release; store at `docs/audits/YYYY-MM-DD-360.md`.
-
----
 
 ## 6. Session protocol
 

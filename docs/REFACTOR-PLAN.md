@@ -55,8 +55,6 @@ all above ──► #26 docs reconcile + companions
 stable base ──► #7 Grafana, #8 real-time, #3 (features)
 ```
 
----
-
 ## Phase 1 — Security (P0) · issues #13, #14
 
 Smallest possible diffs on the current code for immediate risk
@@ -133,8 +131,6 @@ Only after the base is solid:
 - **#8** Real-time delivery (WebSocket/SSE) replacing/augmenting polling.
 - **#3** Round out the Angular dashboard (chart selection per the
   original assignment).
-
----
 
 ## Verification per phase
 
