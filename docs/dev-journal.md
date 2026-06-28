@@ -12,6 +12,7 @@ Drove the 360-audit refactor (epic #12) through **Phase 1 (P0 security)**
 and **Phase 2 (P1)**.
 
 ### PRs merged (7)
+
 | PR | Summary | Closes |
 |----|---------|--------|
 | #30 | Flask debug off + gunicorn + scoped CORS; config classes (Dev/Test/Prod, default Production) | #13, #14 |
@@ -25,11 +26,16 @@ and **Phase 2 (P1)**.
 **Issues closed:** #13, #14, #15, #16, #17, #18, #19, #20, #21.
 
 ### Key decisions (see `docs/decisions/`)
-- Data generator runs as a dedicated worker process, not a factory thread — **ADR-0001**.
-- CI gates only currently-green checks; `mypy --strict` (#24) and frontend ESLint (#25) phase in later — **ADR-0002**.
-- Production frontend served by nginx with a same-origin `/api` proxy (no CORS in prod) — **ADR-0003**.
+
+- Data generator runs as a dedicated worker process, not a factory thread
+  — **ADR-0001**.
+- CI gates only currently-green checks; `mypy --strict` (#24) and frontend
+  ESLint (#25) phase in later — **ADR-0002**.
+- Production frontend served by nginx with a same-origin `/api` proxy (no
+  CORS in prod) — **ADR-0003**.
 
 ### Process note (stacked PRs)
+
 Merging a PR with `--delete-branch` deletes the *base* branch of any child
 (stacked) PR, which GitHub then **auto-closes** — and a PR whose base branch
 is gone **cannot be reopened**. This closed #31; recovered as #34.
@@ -37,6 +43,7 @@ is gone **cannot be reopened**. This closed #31; recovered as #34.
 branches only at the very end.
 
 ### Known follow-ups / not verified this session
+
 - **Docker not run end-to-end:** the engine was unavailable locally, so the
   nginx image (#17) and hardened compose (#21) were validated with
   `docker compose config` only. A `docker compose up` smoke test is
@@ -48,10 +55,11 @@ branches only at the very end.
 - Open Dependabot PRs (ruff, pytest) awaiting review.
 
 ### Next
+
 Phase 3 (P2): #22 (Alembic — drops runtime `db.create_all()`, indexes
 `timestamp`), #23 (API contract/versioning), #24 (backend restructure →
-unblocks mypy-strict gate), #25 (frontend polish → unblocks ESLint gate),
-#26 (docs reconcile + ONBOARDING/PLAYBOOK), #27 (pre-commit hooks).
+unblocks mypy-strict gate), #25 (frontend polish → unblocks ESLint
+gate), #26 (docs reconcile + ONBOARDING/PLAYBOOK), #27 (pre-commit hooks).
 
 ## 2026-06-27 — P2 architecture/API/polish + repo hardening
 
@@ -62,6 +70,7 @@ Completed **Phase 3 (P2)** of the 360-audit refactor (epic #12) and hardened
 the repo workflow.
 
 ### PRs merged (5)
+
 | PR | Summary | Closes |
 |----|---------|--------|
 | #49 | Alembic migrations; drop runtime `db.create_all()`; index `timestamp`; one-shot compose `migrate` service | #22 |
@@ -77,13 +86,15 @@ added `docs/ONBOARDING.md`; expanded `docs/PLAYBOOK.md`; un-ignored
 **Issues closed:** #22, #23, #24, #25, #27 (and #26 by this PR).
 
 ### Repo hardening (outside the epic)
-- Triaged + merged 10 Dependabot PRs (#35–#44: CI action bumps, flask-cors 5→6,
-  pytest 8→9, ruff 0.8→0.15).
+
+- Triaged + merged 10 Dependabot PRs (#35–#44: CI action bumps, flask-cors
+  5→6, pytest 8→9, ruff 0.8→0.15).
 - Configured branch protection on `main` (required checks + up-to-date + PR +
   1 approval; admins not enforced so the owner merges via override); enabled
   repo auto-merge + delete-branch-on-merge.
 
-### Known follow-ups / not verified this session
+### Known follow-ups / not verified (P2 session)
+
 - **Docker still not run end-to-end** (engine unavailable all session): the
   `migrate` service, src-layout image, and worker command were validated with
   `docker compose config` + local SQLite, **not** a live `docker compose up`.
@@ -95,6 +106,7 @@ added `docs/ONBOARDING.md`; expanded `docs/PLAYBOOK.md`; un-ignored
   pre-commit; needs a typed `db.Model` base + annotations.
 
 ### Next
+
 P2 complete. Remaining: features (#7 Grafana, #8 websockets) and the Render
 deploy (#29) — run the Docker smoke test first.
 
@@ -103,17 +115,20 @@ deploy (#29) — run the Docker smoke test first.
 **Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
 `main`, CI-gated, owner-merged.
 
-First live `docker compose up` of the refactored stack, then implemented the
-Render free-tier deployment (#29) plus two small fixes. All three PRs (#55,
-#56, #57) merged to `main` (admin override squash); #29 auto-closed on #55.
+First live `docker compose up` of the refactored stack, then implemented
+the Render free-tier deployment (#29) plus two small fixes. All three PRs
+(#55, #56, #57) merged to `main` (admin override squash); #29 auto-closed
+on #55.
 
 ### Docker smoke test (the pre-#29 gate from the last entry)
+
 Full stack came up healthy in order (db → migrate → backend → worker →
 frontend); `/health`·`/ready`·`/api/v1/sensors` 200, bad `?limit` 400, 404
 JSON; worker inserted every 10s; nginx proxied `/api`; gunicorn (no dev
 server). Surfaced one nit: the page `<title>` was still `Default`.
 
 ### PRs merged (3)
+
 | PR | Summary | Closes |
 |----|---------|--------|
 | #55 | Render free-tier Blueprint (`render.yaml`: managed PG + Docker backend + static frontend) + `DEPLOY.md` + ADR-0004; `postgres://` URL normalization; `run_generator()` + gunicorn `post_worker_init` in-process generator; `render-start.sh`; build-time `API_URL` injection | #29 |
@@ -121,18 +136,21 @@ server). Surfaced one nit: the page `<title>` was still `Default`.
 | #57 | CLAUDE.md §2.10 doc-style rule (no decorative `---`) + strip existing rules from CLAUDE/dev-journal/REFACTOR-PLAN | — |
 
 ### Key decision
-- Free-tier in-process generator (scoped exception to ADR-0001), started in the
-  gunicorn **worker** not master — **ADR-0004**. The master variant
+
+- Free-tier in-process generator (scoped exception to ADR-0001), started in
+  the gunicorn **worker** not master — **ADR-0004**. The master variant
   (`when_ready`) deadlocked request workers via the fork-after-thread hazard;
   caught by a full Render-path Docker simulation, not just YAML review.
 
 ### Verification
+
 Backend ruff + 30 pytest; frontend lint + format + build + 11 Karma tests; a
 live `docker compose up`; and a Render-path Docker sim (migrate→gunicorn,
 `$PORT` bind, `postgres://` normalization, in-process generator, API contract
 200/400/404). All 6 CI checks green on each PR before merge.
 
 ### Known follow-ups / pending
+
 - **Connect the repo in Render** (New + → Blueprint) now that #55 is merged;
   then fix `CORS_ORIGINS`/`API_URL` if Render suffixes the service hostnames
   (DEPLOY.md).
@@ -141,4 +159,5 @@ live `docker compose up`; and a Render-path Docker sim (migrate→gunicorn,
 - Historical docs (360 audit, ASSIGNMENT) intentionally keep their `---`.
 
 ### Next
+
 Connect Render. Then features — #7 Grafana, #8 websockets; docs #10/#11.
