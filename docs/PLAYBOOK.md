@@ -99,3 +99,23 @@ GitHub Actions runs on every PR and push to `main` (see
 (`ruff check` + `pytest`), frontend (`lint` + `format:check` + `build` +
 `test`), gitleaks, and CodeQL. `main` is protected — merge via PR on green
 CI.
+
+## Deploy (Render free tier)
+
+Deployment is a version-controlled Blueprint, [`render.yaml`](../render.yaml)
+(managed Postgres + Docker backend + static frontend). There is no deploy CLI
+step — connect the repo once in the Render dashboard (**New + → Blueprint**) and
+pushes to the deployed branch auto-deploy. Full walkthrough and free-tier
+caveats: [DEPLOY.md](DEPLOY.md).
+
+Verify a running deploy:
+
+```bash
+curl https://sensor-app-backend.onrender.com/health    # {"status":"ok"}
+curl https://sensor-app-backend.onrender.com/ready     # {"status":"ready"}
+curl "https://sensor-app-backend.onrender.com/api/v1/sensors?limit=5"
+```
+
+On the free tier the generator runs in-process in the single web instance
+(`RUN_INPROCESS_GENERATOR=true`), not as a separate worker — see
+[ADR-0004](decisions/0004-inprocess-generator-free-tier.md).
