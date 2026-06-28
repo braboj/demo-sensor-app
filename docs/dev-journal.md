@@ -2,6 +2,52 @@
 
 A session-by-session log of significant work. Newest entry first.
 
+## 2026-06-28 — Docker smoke test + Render deploy (#29) + small fixes
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated, owner-merged.
+
+First live `docker compose up` of the refactored stack, then implemented the
+Render free-tier deployment (#29) plus two small fixes. All three PRs are open
+and green, awaiting owner approval/merge (none merged yet).
+
+### Docker smoke test (the pre-#29 gate from the last entry)
+Full stack came up healthy in order (db → migrate → backend → worker →
+frontend); `/health`·`/ready`·`/api/v1/sensors` 200, bad `?limit` 400, 404
+JSON; worker inserted every 10s; nginx proxied `/api`; gunicorn (no dev
+server). Surfaced one nit: the page `<title>` was still `Default`.
+
+### PRs opened (3, all green, pending merge)
+| PR | Summary | Closes |
+|----|---------|--------|
+| #55 | Render free-tier Blueprint (`render.yaml`: managed PG + Docker backend + static frontend) + `DEPLOY.md` + ADR-0004; `postgres://` URL normalization; `run_generator()` + gunicorn `post_worker_init` in-process generator; `render-start.sh`; build-time `API_URL` injection | #29 |
+| #56 | Page `<title>` → "Sensor Dashboard" | — |
+| #57 | CLAUDE.md §2.10 doc-style rule (no decorative `---`) + strip existing rules from CLAUDE/dev-journal/REFACTOR-PLAN | — |
+
+### Key decision
+- Free-tier in-process generator (scoped exception to ADR-0001), started in the
+  gunicorn **worker** not master — **ADR-0004**. The master variant
+  (`when_ready`) deadlocked request workers via the fork-after-thread hazard;
+  caught by a full Render-path Docker simulation, not just YAML review.
+
+### Verification
+Backend ruff + 30 pytest; frontend lint + format + build + 11 Karma tests; a
+live `docker compose up`; and a Render-path Docker sim (migrate→gunicorn,
+`$PORT` bind, `postgres://` normalization, in-process generator, API contract
+200/400/404). All 6 CI checks green on each PR.
+
+### Known follow-ups / pending
+- **Merges pending owner approval** for #55/#56/#57; #29 auto-closes on #55.
+- **Connect the repo in Render** (New + → Blueprint) after #55 merges; then fix
+  `CORS_ORIGINS`/`API_URL` if Render suffixes the service hostnames (DEPLOY.md).
+- **`backend/.env.example`** still not dropped in (tooling `.env*` guard).
+- **mypy** still not gated.
+- Historical docs (360 audit, ASSIGNMENT) intentionally keep their `---`.
+
+### Next
+Merge the three PRs; connect Render. Then features — #7 Grafana, #8 websockets;
+docs #10/#11.
+
 ## 2026-06-27 — P2 architecture/API/polish + repo hardening
 
 **Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
