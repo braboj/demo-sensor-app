@@ -18,7 +18,10 @@ COPY . .
 # Expose the application port
 EXPOSE 5000
 
-# Run under gunicorn — never the Flask dev server. The data generator runs
-# as a separate worker service (python -m sensor_api.worker), so multiple web
-# workers are safe; tune with the WEB_CONCURRENCY env var (gunicorn reads it).
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "sensor_api:create_app()"]
+# Run under gunicorn — never the Flask dev server. Settings (bind $PORT, worker
+# count, optional in-process generator) live in gunicorn.conf.py so the same
+# image serves compose and the cloud. The data generator runs as a separate
+# worker service by default (python -m sensor_api.worker); Render free overrides
+# this CMD with render-start.sh (migrate + gunicorn) and enables the in-process
+# generator via RUN_INPROCESS_GENERATOR.
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "sensor_api:create_app()"]

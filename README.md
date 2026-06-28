@@ -62,6 +62,7 @@ and `GET /ready` (readiness — 200 if the database is reachable, else 503).
 
 - To set up a dev environment, see [Onboarding](docs/ONBOARDING.md)
 - For day-to-day commands, see the [Playbook](docs/PLAYBOOK.md)
+- To deploy on Render (free tier), see [Deploy](docs/DEPLOY.md)
 - To learn more about the project, please visit [Assignment](docs/history/ASSIGNMENT.md)
 - To read about the solution, please visit [Solution](docs/history/SOLUTION.md)
 - To contribute, please visit [Contributing](CONTRIBUTING.md)

@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "NG_BUILD_PARALLEL_TS=0 ng serve",
+    "prebuild": "node scripts/set-api-url.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false --browsers=ChromeHeadlessCI",

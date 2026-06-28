@@ -1,0 +1,4 @@
+# Shell scripts must use LF so they run under `sh` on Linux (containers and
+# Render), regardless of a contributor's core.autocrlf setting. A CRLF shell
+# script fails to parse on Linux.
+*.sh text eol=lf
