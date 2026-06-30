@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { catchError, of } from 'rxjs';
+import { Subscription, catchError, of } from 'rxjs';
 import { SensorService } from '../sensors.service';
 import { SensorData } from '../sensordata';
+
+// Cap the live table so an always-open stream cannot grow it without bound.
+const MAX_ROWS = 100;
 
 @Component({
   selector: 'app-home',
@@ -18,7 +21,19 @@ import { SensorData } from '../sensordata';
 
   template: `
     <section class="results">
-      <h2>Latest Sensor Data (Hit F5 to refresh, new data every 10 seconds)</h2>
+      <h2>Latest Sensor Data</h2>
+
+      @if (live) {
+        <p class="status status-live" role="status">
+          <span aria-hidden="true">●</span> Live — new readings stream in
+          automatically.
+        </p>
+      } @else if (liveError) {
+        <p class="status status-error" role="alert">
+          Live updates unavailable — showing the latest snapshot. Reload to
+          retry.
+        </p>
+      }
 
       @if (loading) {
         <p class="status" role="status">Loading sensor data…</p>
@@ -66,7 +81,7 @@ import { SensorData } from '../sensordata';
   `,
   styleUrls: ['./home.component.css'],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   // List of sensor data
   sensorDataList: SensorData[] = [];
 
@@ -74,15 +89,21 @@ export class HomeComponent implements OnInit {
   loading = true;
   error = false;
 
+  // Live-stream state: `live` once events are arriving, `liveError` if the
+  // SSE connection failed.
+  live = false;
+  liveError = false;
+
   // Inject the sensor service
   private readonly sensorService = inject(SensorService);
+  private streamSub?: Subscription;
 
   // Map the coded vibration value (0/1) to a human-readable label.
   vibrationLabel(value: number): string {
     return value === 1 ? 'Detected' : 'None';
   }
 
-  // Load data once when the component initializes
+  // Load the initial snapshot once, then start streaming live updates.
   ngOnInit(): void {
     this.sensorService
       .getAllSensorData()
@@ -95,6 +116,34 @@ export class HomeComponent implements OnInit {
       .subscribe((sensorDataList: SensorData[]) => {
         this.sensorDataList = sensorDataList;
         this.loading = false;
+        if (!this.error) {
+          this.startLiveUpdates();
+        }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.streamSub?.unsubscribe();
+  }
+
+  // Subscribe to the SSE stream and prepend each new reading, newest first.
+  private startLiveUpdates(): void {
+    this.streamSub = this.sensorService.streamReadings().subscribe({
+      next: (reading: SensorData) => {
+        this.live = true;
+        this.liveError = false;
+        // Drop any existing row with the same id (the stream primes with the
+        // latest reading, which the initial load may already hold), prepend
+        // the new one, and cap the list length.
+        const withoutDuplicate = this.sensorDataList.filter(
+          (row) => row.id !== reading.id,
+        );
+        this.sensorDataList = [reading, ...withoutDuplicate].slice(0, MAX_ROWS);
+      },
+      error: () => {
+        this.live = false;
+        this.liveError = true;
+      },
+    });
   }
 }

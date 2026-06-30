@@ -60,6 +60,14 @@ non-integer or out-of-range value returns `400`):
 curl http://localhost:5000/api/v1/sensors?limit=1
 ```
 
+For live updates, the dashboard subscribes to a Server-Sent Events stream
+instead of re-polling; new readings appear automatically as they are
+recorded (see [ADR-0005](docs/decisions/0005-realtime-delivery-sse.md)):
+
+```bash
+curl -N http://localhost:5000/api/v1/sensors/stream
+```
+
 Operational endpoints: `GET /health` (liveness — 200 if the process is up)
 and `GET /ready` (readiness — 200 if the database is reachable, else 503).
 

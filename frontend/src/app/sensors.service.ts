@@ -23,4 +23,33 @@ export class SensorService {
   getAllSensorData(): Observable<SensorData[]> {
     return this.http.get<SensorData[]>(this.url);
   }
+
+  /**
+   * Streams sensor readings live from the backend over Server-Sent Events.
+   *
+   * Returns a cold Observable that opens an `EventSource` on subscribe and
+   * closes it on unsubscribe. Each `data:` message is parsed into a
+   * `SensorData`; the Observable errors if the connection fails so callers can
+   * render an explicit "live updates unavailable" state instead of silently
+   * going stale.
+   */
+  streamReadings(): Observable<SensorData> {
+    return new Observable<SensorData>((subscriber) => {
+      const source = new EventSource(`${this.url}/stream`);
+
+      source.onmessage = (event: MessageEvent) => {
+        try {
+          subscriber.next(JSON.parse(event.data) as SensorData);
+        } catch {
+          // Ignore malformed payloads; SSE comment heartbeats never reach
+          // onmessage, so only a corrupt data frame lands here.
+        }
+      };
+
+      source.onerror = () =>
+        subscriber.error(new Error('SSE connection failed'));
+
+      return () => source.close();
+    });
+  }
 }

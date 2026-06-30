@@ -117,3 +117,27 @@ class FlaskRouteTestCase(unittest.TestCase):
         self.assertIsInstance(timestamp, str)
         parsed = datetime.fromisoformat(timestamp)
         self.assertIsNotNone(parsed.tzinfo)
+
+    def test_api_sensors_stream_emits_latest_reading_as_sse(self):
+        """The stream endpoint returns an SSE response priming the latest row.
+
+        Only the first event is read; the stream is otherwise infinite, so the
+        response is consumed unbuffered and closed rather than drained.
+        """
+        db.session.add(_reading(temperature=21.5))
+        db.session.commit()
+
+        response = self.client.get(f'{SENSORS_URL}/stream', buffered=False)
+        try:
+            self.assertEqual(200, response.status_code)
+            self.assertIn('text/event-stream', response.content_type)
+            self.assertEqual('no', response.headers.get('X-Accel-Buffering'))
+
+            first_event = next(response.response)
+            if isinstance(first_event, bytes):
+                first_event = first_event.decode('utf-8')
+
+            self.assertTrue(first_event.startswith('data:'))
+            self.assertIn('"temperature": 21.5', first_event)
+        finally:
+            response.close()

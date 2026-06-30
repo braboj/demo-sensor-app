@@ -23,10 +23,17 @@ const rows: SensorData[] = [
 
 function createFixture(
   getAllSensorData: () => Observable<SensorData[]>,
+  streamReadings: () => Observable<SensorData> = () =>
+    new Subject<SensorData>(),
 ): ComponentFixture<HomeComponent> {
   TestBed.configureTestingModule({
     imports: [HomeComponent],
-    providers: [{ provide: SensorService, useValue: { getAllSensorData } }],
+    providers: [
+      {
+        provide: SensorService,
+        useValue: { getAllSensorData, streamReadings },
+      },
+    ],
   });
   return TestBed.createComponent(HomeComponent);
 }
@@ -88,5 +95,79 @@ describe('HomeComponent', () => {
     expect(
       (fixture.nativeElement as HTMLElement).querySelector('table'),
     ).toBeNull();
+  });
+
+  it('prepends a streamed reading and shows the live indicator', () => {
+    const stream = new Subject<SensorData>();
+    const fixture = createFixture(
+      () => of(rows),
+      () => stream,
+    );
+    fixture.detectChanges(); // ngOnInit: initial load + subscribe to stream
+
+    const newReading: SensorData = {
+      id: 3,
+      timestamp: '2026-06-27T00:00:20Z',
+      temperature: 22,
+      humidity: 52,
+      vibration: 0,
+    };
+    stream.next(newReading);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.live).toBeTrue();
+    expect(fixture.componentInstance.sensorDataList[0].id).toBe(3);
+    const tableRows = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      'tbody tr',
+    );
+    expect(tableRows.length).toBe(rows.length + 1);
+    expect(text(fixture)).toContain('Live');
+  });
+
+  it('replaces rather than duplicates a streamed reading already shown', () => {
+    const stream = new Subject<SensorData>();
+    const fixture = createFixture(
+      () => of(rows),
+      () => stream,
+    );
+    fixture.detectChanges();
+
+    // Re-send an already-shown row (id 2), as the stream's prime event does.
+    stream.next({ ...rows[1] });
+    fixture.detectChanges();
+
+    const ids = fixture.componentInstance.sensorDataList.map((row) => row.id);
+    expect(ids.filter((id) => id === 2).length).toBe(1);
+    expect(fixture.componentInstance.sensorDataList.length).toBe(rows.length);
+    expect(fixture.componentInstance.sensorDataList[0].id).toBe(2);
+  });
+
+  it('shows the live-error state when the stream connection fails', () => {
+    const stream = new Subject<SensorData>();
+    const fixture = createFixture(
+      () => of(rows),
+      () => stream,
+    );
+    fixture.detectChanges();
+
+    stream.error(new Error('SSE connection failed'));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.live).toBeFalse();
+    expect(fixture.componentInstance.liveError).toBeTrue();
+    expect(text(fixture)).toContain('Live updates unavailable');
+  });
+
+  it('closes the live stream when destroyed', () => {
+    const stream = new Subject<SensorData>();
+    const fixture = createFixture(
+      () => of(rows),
+      () => stream,
+    );
+    fixture.detectChanges();
+    expect(stream.observed).toBeTrue();
+
+    fixture.destroy();
+    expect(stream.observed).toBeFalse();
   });
 });
