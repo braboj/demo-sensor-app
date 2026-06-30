@@ -4,9 +4,12 @@
 Keeps the route thin: the boundary parses/validates the query and shapes
 the response here, the service owns the query.
 """
-from datetime import timezone
+from datetime import datetime, timezone
+from typing import Any
 
 from flask import abort
+
+from .models import SensorData
 
 # Bounds for the ?limit= query parameter (inclusive). A missing value uses
 # the default; a non-integer or out-of-range value is rejected with 400.
@@ -15,7 +18,7 @@ MIN_LIMIT = 1
 MAX_LIMIT = 100
 
 
-def parse_limit(raw):
+def parse_limit(raw: str | None) -> int:
     """Validate the ?limit= query value into a bounded integer.
 
     Returns ``DEFAULT_LIMIT`` when absent; aborts with ``400`` on a
@@ -41,7 +44,7 @@ def parse_limit(raw):
     return limit
 
 
-def _iso_utc(value):
+def _iso_utc(value: datetime | None) -> str | None:
     """Serialize a datetime as an ISO-8601 string in UTC.
 
     Stored timestamps are naive UTC (the DB ``current_timestamp`` default);
@@ -54,7 +57,7 @@ def _iso_utc(value):
     return value.astimezone(timezone.utc).isoformat()
 
 
-def serialize_reading(row):
+def serialize_reading(row: SensorData) -> dict[str, Any]:
     """Shape one ``SensorData`` row into a JSON-ready dict."""
     return {
         "id": row.id,

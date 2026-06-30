@@ -1,3 +1,5 @@
+from typing import Any
+
 from flask import Flask
 from flask_cors import CORS
 
@@ -8,7 +10,7 @@ from .errors import register_error_handlers
 from .extensions import db, migrate
 
 
-def create_app(test_config=None):
+def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     """Application factory — wiring only (config, extensions, blueprints).
 
     No global app, no threads, no db.create_all(): the schema comes from
