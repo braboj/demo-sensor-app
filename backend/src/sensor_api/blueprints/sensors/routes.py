@@ -1,5 +1,6 @@
 # encoding: utf-8
 from flask import Blueprint, Response, current_app, jsonify, request
+from flask.typing import ResponseReturnValue
 
 from .events import sensor_event_stream
 from .schemas import parse_limit, serialize_reading
@@ -9,7 +10,7 @@ api = Blueprint('sensors', __name__, url_prefix='/api/v1')
 
 
 @api.route('/sensors', methods=['GET'])
-def get_all_sensors():
+def get_all_sensors() -> ResponseReturnValue:
     """Return the most recent sensor readings, newest first.
 
     Example:
@@ -22,7 +23,7 @@ def get_all_sensors():
 
 
 @api.route('/sensors/stream', methods=['GET'])
-def stream_sensors():
+def stream_sensors() -> Response:
     """Stream sensor readings live over SSE (``text/event-stream``).
 
     The browser opens one long-lived connection (``EventSource``) and receives
@@ -31,7 +32,9 @@ def stream_sensors():
     can manage its own app context independently of this request.
     """
 
-    app = current_app._get_current_object()
+    # flask types `current_app` as the proxied Flask for ergonomics, so the
+    # LocalProxy-only `_get_current_object` is invisible to the type checker.
+    app = current_app._get_current_object()  # type: ignore[attr-defined]
     response = Response(
         sensor_event_stream(app),
         mimetype='text/event-stream',

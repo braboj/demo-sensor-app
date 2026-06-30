@@ -16,6 +16,7 @@ from collections.abc import Iterator
 
 from flask import Flask
 
+from .models import SensorData
 from .schemas import serialize_reading
 from .services import SensorService
 
@@ -25,12 +26,12 @@ from .services import SensorService
 STREAM_POLL_SECONDS = 2.0
 
 
-def _format_event(payload):
+def _format_event(payload: str) -> str:
     """Frame a JSON payload string as a single SSE ``data:`` event."""
     return f"data: {payload}\n\n"
 
 
-def _serialize_event(row):
+def _serialize_event(row: SensorData) -> str:
     """Serialize one reading row into its SSE event string."""
     return _format_event(json.dumps(serialize_reading(row)))
 

@@ -146,5 +146,3 @@ Only after the base is solid:
 Phases 1→6 in order. Within a phase, one PR per issue. Phases 2 and 3
 can run in parallel (different stacks) once Phase 1 lands; Phase 4's #19
 waits on the test issues (#20, #18).
-EOF
-echo "written docs/REFACTOR-PLAN.md"

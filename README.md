@@ -40,6 +40,11 @@ one-shot migration step, and the data-generator worker):
 
 - [Frontend (Angular) / localhost:4200](http://localhost:4200)
 - [Backend (Flask) / localhost:5000](http://localhost:5000)
+- [Grafana / localhost:3000](http://localhost:3000)
+
+Grafana ships with a PostgreSQL datasource and a "Sensor Readings" dashboard
+provisioned as code (`deploy/grafana/provisioning/`). Log in with `admin` /
+`admin` (override via `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`).
 
 The backend exposes a versioned endpoint to retrieve sensor data:
 

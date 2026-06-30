@@ -1,0 +1,17 @@
+# Dashboard provider, provisioned as code (CLAUDE.md §2.8). Grafana loads
+# every *.json dashboard in `options.path` (this directory) and ignores
+# this YAML, so the provider config and the dashboards can live together.
+apiVersion: 1
+
+providers:
+  - name: Sensor dashboards
+    orgId: 1
+    type: file
+    disableDeletion: true
+    # Re-read the files periodically so committed changes show up on restart.
+    updateIntervalSeconds: 30
+    # Managed by provisioning — do not allow edits through the UI.
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

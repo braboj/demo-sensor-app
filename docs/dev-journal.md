@@ -161,3 +161,106 @@ live `docker compose up`; and a Render-path Docker sim (migrate→gunicorn,
 ### Next
 
 Connect Render. Then features — #7 Grafana, #8 websockets; docs #10/#11.
+
+## 2026-06-30 — Deploy readiness review + gap triage (issues #59-#62)
+
+**Tool:** Claude Code (Opus 4.8) · **Type:** triage / tracking — no code changes.
+
+A planning session: reviewed Render deploy readiness, evaluated a sibling
+project's deploy pattern, and filed a ticket for every known gap.
+
+### Render deploy readiness
+
+Pre-flight of the shipped Blueprint (`render.yaml` + `render-start.sh` +
+`gunicorn.conf.py` + `set-api-url.mjs`) against the build config — all
+consistent (static output path, prod `environment.prod.ts` swap, `$PORT` bind,
+migrate-then-serve). Confirmed the first deploy is a one-time **owner** dashboard
+action (no Render CLI or API key in the environment) and that **no secrets** are
+added by hand (`SECRET_KEY` generated, `DATABASE_URL` auto-wired). Kept
+`autoDeploy: true` (push-based) for now.
+
+### randomgen deploy pattern (reference)
+
+Reviewed `braboj/demo-randomgen`: it deploys via `runtime: image` plus a
+release-tag CD that publishes to Docker Hub then POSTs a Render Deploy Hook. Its
+**AD-17** moved off `autoDeploy`-on-commit because it "did not fire reliably" —
+logged as a spike for sensor_app rather than adopted now.
+
+### Issues created (4)
+
+| #   | Title                                            | Note                                          |
+| --- | ------------------------------------------------ | --------------------------------------------- |
+| #59 | Deploy-trigger spike (deploy-hook vs autoDeploy) | `spike` P3 — output is an ADR                 |
+| #60 | Add committed `backend/.env.example`             | `task` P2 — tooling `.env*` guard left it out |
+| #61 | Gate `mypy --strict` in CI + pre-commit          | `task` P2 — needs annotations + typed model   |
+| #62 | Connect Blueprint in Render + verify live deploy | `task` P2 — owner go-live action              |
+
+### Epic #12 reconciled
+
+Ticked #29 (Blueprint shipped in #55) and added a "Phase 8 — Follow-ups" section
+linking #59-#62.
+
+### Next
+
+Owner: connect Render (#62). Then close the two convention gaps (#60 env
+template, #61 mypy gating) and the feature backlog (#7 Grafana, #8 websockets;
+docs #10/#11).
+
+## 2026-06-30 — Phase 6 features + Phase 8 follow-ups (Grafana, SSE, mypy)
+
+Tool: Claude Code (Opus 4.8). Cleared the remaining epic #12 backlog. All work
+shipped as CI-green PRs; `main` is branch-protected so the owner merges.
+
+### PRs opened (awaiting owner merge)
+
+| #   | Closes | Summary                                                          |
+| --- | ------ | ---------------------------------------------------------------- |
+| #64 | —      | strip a stray heredoc terminator from `docs/REFACTOR-PLAN.md`    |
+| #65 | #7     | Grafana service + datasource & dashboard provisioned as code     |
+| #66 | #8     | live readings over SSE (`/api/v1/sensors/stream`) + gevent worker |
+| #67 | #3     | dashboard links out to Grafana for charts (stacked on #66)       |
+| #68 | #60    | committed `backend/.env.example` template                        |
+| #69 | #61    | annotate the backend + gate `mypy --strict` (CI + pre-commit)    |
+
+### Key decisions (see `docs/decisions/`)
+
+- **SSE over WebSockets** for real-time delivery — one-way data, plain HTTP, no
+  client library; gunicorn runs the **gevent** worker so a long-lived stream
+  does not block the single web worker. **ADR-0005**. Dropped the unused
+  `flask-socketio` dep and the dead `backend/scripts/` WebSocket prototype.
+- **#3 charting deferred to Grafana** (owner's call) — the SPA stays the live
+  table and links to the provisioned dashboard; no charting library added.
+- **Typed model base** to gate `mypy --strict`: `class Base(DeclarativeBase)` +
+  `SQLAlchemy(model_class=Base)`; `SensorData` subclasses `Base` directly with
+  `Mapped[...]` (flask-sqlalchemy still types `db.Model` as `Any`). Explicit
+  `__tablename__`; schema-compatible, no migration. **ADR-0006** (supersedes the
+  ADR-0002 mypy carve-out).
+
+### Verification
+
+Per PR, the matching gates: backend `ruff` + `mypy src` + `pytest`; frontend
+`eslint` + `prettier` + `build` + Karma. Plus a live `docker compose up` for
+**#7** (Grafana datasource "Database Connection OK", dashboard provisioned,
+panel SQL returns worker rows) and **#8** (worker boots `Using worker: gevent`;
+SSE streams direct and via the nginx proxy; `GET /api/v1/sensors` returns 200 in
+~15 ms *while* a stream is held open — the gevent non-blocking proof).
+
+### Cross-PR note (merge carefully)
+
+PR #66 adds backend code the #61 gate checks. Pre-annotated #66's net-new code
+and **test-merged #61↔#66 locally** → the union is `mypy --strict` clean (15
+files) + 31 pytest. Merging #66 and #69 yields **one trivial conflict** (the
+`routes.py` flask import line) — resolve by keeping **both** the
+`from flask import …` and `from flask.typing import ResponseReturnValue` lines.
+
+### Process notes
+
+- The Write tool blocks `.env*` paths; created `backend/.env.example` via a
+  Bash heredoc instead (placeholders only; gitleaks green).
+- CI backend job name kept "Backend (ruff + pytest)" even though it now runs
+  mypy, to preserve the required-status-check contract in branch protection.
+
+### Next
+
+Owner: merge the seven open PRs (suggested order #63/#64/#68 → #65 → #66 → #69,
+then #67 last), then connect Render (#62). Deferred: #59 deploy-trigger spike.

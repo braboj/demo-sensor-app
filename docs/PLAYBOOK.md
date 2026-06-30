@@ -28,6 +28,7 @@ flask --app sensor_api db downgrade            # roll back one migration
 python -m sensor_api.worker                    # run the data generator
 pytest                                         # tests
 ruff check .                                   # lint
+mypy src                                       # strict type check (CI-gated)
 gunicorn "sensor_api:create_app()"             # production server (Linux)
 ```
 
@@ -83,22 +84,19 @@ Hooks (see [`.pre-commit-config.yaml`](../.pre-commit-config.yaml)):
 | Hook | Scope | Mirrors CI |
 | --- | --- | --- |
 | `ruff-check` | `backend/` Python lint | `ruff check backend` |
+| `mypy` | `backend/` strict type check | `mypy src` |
 | `gitleaks` | secret scan | gitleaks job |
 | `eslint` | `frontend/` TS/HTML lint | `npm run lint` |
 | `prettier` | `frontend/src` format check | `npm run format:check` |
 | `check-yaml`, `check-merge-conflict`, `check-added-large-files` | repo | — |
 
-> **mypy is not enabled yet.** The backend is not fully type-annotated and
-> `db.Model` / `flask_migrate` need typing work first — the same reason CI
-> defers `mypy --strict`. A mypy hook joins once the annotations land.
-
 ## CI
 
 GitHub Actions runs on every PR and push to `main` (see
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)): backend
-(`ruff check` + `pytest`), frontend (`lint` + `format:check` + `build` +
-`test`), gitleaks, and CodeQL. `main` is protected — merge via PR on green
-CI.
+(`ruff check` + `mypy src` + `pytest`), frontend
+(`lint` + `format:check` + `build` + `test`), gitleaks, and CodeQL. `main` is
+protected — merge via PR on green CI.
 
 ## Deploy (Render free tier)
 
