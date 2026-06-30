@@ -31,8 +31,8 @@ For local (non-Docker) development of a single service:
 ## Run the whole stack
 
 ```bash
-git clone https://github.com/braboj/sensor-data-app
-cd sensor-data-app
+git clone https://github.com/braboj/demo-sensor-app
+cd demo-sensor-app
 docker compose up --build
 ```
 

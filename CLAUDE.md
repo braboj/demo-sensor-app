@@ -6,7 +6,7 @@ Angular frontend displays it; PostgreSQL persists it; Grafana visualizes
 it.
 
 - Owner: Branimir Georgiev (Imbra.io)
-- Repo: github.com/braboj/sensor-data-app
+- Repo: github.com/braboj/demo-sensor-app
 - Deployment: Docker Compose (local); container images per service
 - Model: hybrid
 

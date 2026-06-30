@@ -19,13 +19,13 @@ Clone the repository using the following command (replace `<project-name>`
 with the name of your project):
 
 ```bash
-git clone https://github.com/braboj/sensor-data-app <project-name>
+git clone https://github.com/braboj/demo-sensor-app <project-name>
 ```
 
 For a specific branch, use the following command:
 
 ```bash
-git clone -b <branch-name> https://github.com/braboj/sensor-data-app <project-name>
+git clone -b <branch-name> https://github.com/braboj/demo-sensor-app <project-name>
 ```
 
 Navigate to the project folder and run the following command to start 
@@ -79,4 +79,4 @@ and `GET /ready` (readiness — 200 if the database is reachable, else 503).
 - To learn more about the project, please visit [Assignment](docs/history/ASSIGNMENT.md)
 - To read about the solution, please visit [Solution](docs/history/SOLUTION.md)
 - To contribute, please visit [Contributing](CONTRIBUTING.md)
-- To leave feedback, please visit [Discussions](https://github.com/braboj/sensor-data-app/discussions)
+- To leave feedback, please visit [Discussions](https://github.com/braboj/demo-sensor-app/discussions)
