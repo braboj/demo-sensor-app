@@ -82,6 +82,38 @@ services:
       start_period: 10s
       timeout: 5s
 
+  # Grafana visualizes the sensor_data table. Datasource and dashboards are
+  # provisioned as code from deploy/grafana/provisioning (CLAUDE.md §2.8) —
+  # nothing is configured through the UI. DB credentials are passed via env
+  # and interpolated in the datasource YAML; no secrets are committed.
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      # Consumed by deploy/grafana/provisioning/datasources/datasource.yaml.
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sensordb
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
+
   # One-shot schema migration. Runs `flask db upgrade` once the DB is
   # healthy, then exits; backend and worker wait for it to complete
   # successfully (schema comes from Alembic, never db.create_all()). Reuses
@@ -100,4 +132,6 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  grafana_data:
     driver: local

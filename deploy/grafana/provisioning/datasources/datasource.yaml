@@ -1,0 +1,23 @@
+# Grafana datasource, provisioned as code (CLAUDE.md §2.8).
+# Credentials are interpolated from environment variables passed to the
+# grafana service in docker-compose.yml — no secrets are committed here.
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL
+    uid: sensordb-pg
+    type: postgres
+    access: proxy
+    url: db:5432
+    user: ${POSTGRES_USER}
+    # `database` is the canonical top-level field for SQL datasources.
+    database: ${POSTGRES_DB}
+    isDefault: true
+    # Managed by provisioning — do not allow edits through the UI.
+    editable: false
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: false
