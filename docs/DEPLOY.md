@@ -26,7 +26,7 @@ is scoped to the static site's URL.
 
 ## One-time setup
 
-1. Push this repo to GitHub (already done: `braboj/sensor-data-app`).
+1. Push this repo to GitHub (already done: `braboj/demo-sensor-app`).
 2. In the Render dashboard: **New +** → **Blueprint**.
 3. Connect the repository and select the branch. Render reads `render.yaml`
    from the repo root and shows the three resources above.
