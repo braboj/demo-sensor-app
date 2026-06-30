@@ -31,7 +31,9 @@ def stream_sensors() -> Response:
     can manage its own app context independently of this request.
     """
 
-    app = current_app._get_current_object()
+    # flask types `current_app` as the proxied Flask for ergonomics, so the
+    # LocalProxy-only `_get_current_object` is invisible to the type checker.
+    app = current_app._get_current_object()  # type: ignore[attr-defined]
     response = Response(
         sensor_event_stream(app),
         mimetype='text/event-stream',
