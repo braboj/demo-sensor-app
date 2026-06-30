@@ -5,3 +5,17 @@
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+# Strict static typing for the application package. Run `mypy src` from
+# backend/ (CI and the pre-commit hook do exactly that).
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+files = ["src"]
+strict = true
+
+# These libraries ship no type information; ignore the missing-import error
+# rather than weaken strictness for our own code.
+[[tool.mypy.overrides]]
+module = ["flask_migrate", "flask_cors"]
+ignore_missing_imports = true

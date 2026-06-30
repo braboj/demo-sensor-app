@@ -79,5 +79,5 @@ DEFAULT_CONFIG = "production"
 
 def get_config(name: str | None = None) -> type[BaseConfig]:
     """Resolve a config class by name, defaulting to the safe production."""
-    selected = name or os.getenv("APP_CONFIG", DEFAULT_CONFIG)
+    selected = name or os.getenv("APP_CONFIG") or DEFAULT_CONFIG
     return CONFIG_MAP.get(selected, ProductionConfig)
