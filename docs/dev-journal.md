@@ -264,3 +264,69 @@ files) + 31 pytest. Merging #66 and #69 yields **one trivial conflict** (the
 
 Owner: merge the seven open PRs (suggested order #63/#64/#68 → #65 → #66 → #69,
 then #67 last), then connect Render (#62). Deferred: #59 deploy-trigger spike.
+
+## 2026-06-30 — Merge queue landed + Render go-live verified (#62)
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated.
+
+Merged the full open-PR queue (admin-override squash, each CI-green) and
+verified the live Render deployment, closing **#62**.
+
+### PRs merged (8)
+
+- **#64** strip stray heredoc terminator from the refactor-plan tail.
+- **#63** dev-journal entry (deploy-readiness + gap triage).
+- **#68** committed `backend/.env.example` template (closes #60).
+- **#65** Grafana Postgres datasource + dashboard provisioned as code (closes #7).
+- **#69** gate `mypy --strict` on the backend (closes #61).
+- **#66** live sensor stream over Server-Sent Events (closes #8).
+- **#67** dashboard → Grafana charting link (closes #3).
+- **#70** update repo references after the `sensor-data-app` → `demo-sensor-app`
+  rename (CLAUDE.md, README, DEPLOY.md, ONBOARDING; left the dated audit).
+
+### Merge-conflict resolutions
+
+- **#66 ↔ #69 (`routes.py` import line)** — resolved exactly as the prior entry
+  predicted: kept **both** `from flask import Blueprint, Response, current_app,
+  jsonify, request` and `from flask.typing import ResponseReturnValue`.
+- **#67 stacked-squash retarget** — after #66 squashed to `main`, GitHub
+  retargeted #67 and it went conflicting. Took `main`'s version of the backend
+  files #67 does not own; hand-merged `home.component.ts/.css` to keep the
+  Grafana-link block/field/styles on top of #66's SSE rendering. Caught and
+  removed a duplicate `const MAX_ROWS = 100;` the auto-merge produced (would
+  otherwise fail the TypeScript build).
+
+### Render go-live (#62) — verified live
+
+The Blueprint was already connected, and `autoDeploy: true` kept it current
+through the merges. Default service names were used (no suffix), so the URLs are
+`sensor-app-backend.onrender.com` / `sensor-app-frontend.onrender.com`.
+
+- `GET /health` → 200 (~13 s cold start), `GET /ready` → 200.
+- `GET /api/v1/sensors?limit=5` → 200 (ISO-8601 UTC rows); `?limit=abc` → 400 and
+  `?limit=999` → 400 (RFC 9457 JSON).
+- Frontend serves 200 HTML; the shipped bundle's baked `API_URL` points at the
+  backend (confirming `set-api-url.mjs` ran in the Render build); CORS is scoped
+  to the frontend origin (not `*`) and the cross-origin GET is allowed.
+- `GET /api/v1/sensors/stream` → `text/event-stream`, a primed reading then a
+  new one ~10 s later — the gevent worker + in-process generator work on the
+  free tier.
+
+Free-tier note: the web service spins down when idle and the in-process
+generator only runs while it is awake, so readings accrue with gaps after idle.
+
+### Repo rename
+
+`braboj/sensor-data-app` → `braboj/demo-sensor-app` (server-side). Old URLs
+redirect; the local `origin` remote and the docs were updated (#70).
+
+### Epic #12
+
+Phase 4 features #7/#8/#3 and Phase 8 #60/#61/#62 ticked. Still open are
+#10/#11 (docs) and #59 (deploy-trigger spike).
+
+### Next
+
+- #10/#11 — confirm the doc issues are satisfied by the shipped docs and close.
+- #59 — deploy-trigger spike (autoDeploy vs deploy-hook), deferred.
