@@ -64,8 +64,47 @@ services:
       # absolute backend endpoint, since the SPA and API are different origins.
       - key: API_URL
         value: https://sensor-app-backend.onrender.com/api/v1/sensors
+      # Surfaces the in-app "View charts in Grafana" link (also baked at build
+      # time). Points at the provisioned dashboard on the grafana service below.
+      - key: GRAFANA_URL
+        value: https://sensor-app-grafana.onrender.com/d/sensor-readings/sensor-readings
     routes:
       # SPA fallback: let Angular's router handle deep links.
       - type: rewrite
         source: /*
         destination: /index.html
+
+  # --- Grafana: dashboards over the managed Postgres, provisioned as code ---
+  - type: web
+    name: sensor-app-grafana
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/grafana/Dockerfile
+    dockerContext: ./deploy/grafana
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # Render exposes the managed DB as a connection string (host/port are not
+      # individually referenceable); the entrypoint parses it into the
+      # POSTGRES_* vars the datasource.yaml interpolates.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sensor-app-db
+          property: connectionString
+      # Free tier has no persistent disk, so users/settings reset on restart;
+      # the dashboard + datasource come from baked-in provisioning, and an
+      # anonymous Viewer role lets the public link work without a login.
+      - key: GF_AUTH_ANONYMOUS_ENABLED
+        value: "true"
+      - key: GF_AUTH_ANONYMOUS_ORG_ROLE
+        value: Viewer
+      - key: GF_USERS_ALLOW_SIGN_UP
+        value: "false"
+      # Admin password for the (otherwise read-only) instance; generated, never
+      # committed. Reset on each deploy, which is fine for a provisioned setup.
+      - key: GF_SECURITY_ADMIN_PASSWORD
+        generateValue: true
+      # Grafana sits behind Render's TLS proxy; tell it its external URL so
+      # generated links and assets resolve.
+      - key: GF_SERVER_ROOT_URL
+        value: https://sensor-app-grafana.onrender.com
