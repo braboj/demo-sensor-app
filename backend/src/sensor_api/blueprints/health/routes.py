@@ -9,6 +9,7 @@ database, returning 503 when it cannot.
 import logging
 
 from flask import Blueprint, jsonify
+from flask.typing import ResponseReturnValue
 from markupsafe import escape
 from sqlalchemy import literal, select
 
@@ -20,19 +21,19 @@ health = Blueprint('health', __name__)
 
 
 @health.route('/')
-def home():
+def home() -> ResponseReturnValue:
     """Root landing page for the backend service."""
     return escape('Backend server is running!')
 
 
 @health.route('/health')
-def liveness():
+def liveness() -> ResponseReturnValue:
     """Liveness: 200 if the process is alive. No dependencies, no auth."""
     return jsonify(status='ok'), 200
 
 
 @health.route('/ready')
-def readiness():
+def readiness() -> ResponseReturnValue:
     """Readiness: 200 only if the database is reachable, else 503."""
     try:
         db.session.execute(select(literal(1)))

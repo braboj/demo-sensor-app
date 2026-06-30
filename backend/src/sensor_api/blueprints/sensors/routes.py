@@ -1,5 +1,6 @@
 # encoding: utf-8
 from flask import Blueprint, Response, current_app, jsonify, request
+from flask.typing import ResponseReturnValue
 
 from .events import sensor_event_stream
 from .schemas import parse_limit, serialize_reading
@@ -9,7 +10,7 @@ api = Blueprint('sensors', __name__, url_prefix='/api/v1')
 
 
 @api.route('/sensors', methods=['GET'])
-def get_all_sensors():
+def get_all_sensors() -> ResponseReturnValue:
     """Return the most recent sensor readings, newest first.
 
     Example:

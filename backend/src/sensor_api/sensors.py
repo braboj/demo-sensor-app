@@ -1,5 +1,6 @@
 import random
 from abc import ABC, abstractmethod
+from typing import Self
 
 from .errors import BackendError
 
@@ -9,82 +10,66 @@ class _SensorAbc(ABC):
 
     @property
     @abstractmethod
-    def tag(self):
-        """The tag name of the sensor.
-
-        Returns:
-            str: The tag name of the sensor.
-        """
+    def tag(self) -> str:
+        """The tag name of the sensor."""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def low_limit(self):
-        """The low limit of the sensor.
-
-        Returns:
-            int | float: The low limit of the sensor.
-        """
+    def low_limit(self) -> float:
+        """The low limit of the sensor."""
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def high_limit(self):
-        """The high limit of the sensor.
-
-        Returns:
-            int | float: The high limit of the sensor.
-        """
+    def high_limit(self) -> float:
+        """The high limit of the sensor."""
         raise NotImplementedError
 
     @abstractmethod
-    def read(self):
-        """Read the sensor data.
-
-        Returns:
-            int | float: The sensor data.
-        """
+    def read(self) -> float:
+        """Read the sensor data."""
         raise NotImplementedError
 
     @abstractmethod
-    def validate(self):
+    def validate(self) -> Self:
         """Validate the sensor instance."""
         raise NotImplementedError
 
 
-class _SensorBase(object):
+class _SensorBase:
     """Base class for all sensors types."""
 
-    def __init__(self, tag, low_limit, high_limit):
+    def __init__(self, tag: str, low_limit: float, high_limit: float) -> None:
         """Initialize the sensor with a tag name."""
 
         self._tag = tag
-        self._low_limit = low_limit
-        self._high_limit = high_limit
-        self._last_value = None
+        self._low_limit: float = low_limit
+        self._high_limit: float = high_limit
+        self._last_value: float | None = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.tag}: {self._last_value}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @property
-    def tag(self):
+    def tag(self) -> str:
         """The tag name of the sensor."""
         return self._tag
 
     @property
-    def low_limit(self):
+    def low_limit(self) -> float:
         """The low limit of the sensor."""
         return self._low_limit
 
     @property
-    def high_limit(self):
+    def high_limit(self) -> float:
         """The high limit of the sensor."""
         return self._high_limit
 
-    def validate(self):
+    def validate(self) -> Self:
         """Validate the discrete sensor instance."""
 
         # Validate the sensor instance
@@ -132,7 +117,9 @@ class DiscreteSensor(_SensorBase, _SensorAbc):
         sensor2.read()
     """
 
-    def __init__(self, tag, low_limit=0, high_limit=1):
+    def __init__(
+        self, tag: str, low_limit: int = 0, high_limit: int = 1
+    ) -> None:
 
         # Call the base class constructor
         super(DiscreteSensor, self).__init__(tag, low_limit, high_limit)
@@ -144,13 +131,16 @@ class DiscreteSensor(_SensorBase, _SensorAbc):
         self._low_limit = int(self.low_limit)
         self._high_limit = int(self.high_limit)
 
-    def read(self):
+    def read(self) -> int:
         """Read the discrete sensor data."""
 
-        self._last_value = random.randint(self.low_limit, self.high_limit)
-        return self._last_value
+        # Limits are stored as ints in __init__; cast satisfies randint's
+        # integer-argument signature (the property type is the numeric float).
+        value = random.randint(int(self.low_limit), int(self.high_limit))
+        self._last_value = value
+        return value
 
-    def validate(self):
+    def validate(self) -> Self:
         """Validate the discrete sensor instance."""
 
         # Validate the basic requirements for the sensor
@@ -188,7 +178,9 @@ class AnalogSensor(_SensorBase, _SensorAbc):
         sensor2.read()
     """
 
-    def __init__(self, tag, low_limit=0.0, high_limit=100.0):
+    def __init__(
+        self, tag: str, low_limit: float = 0.0, high_limit: float = 100.0
+    ) -> None:
 
         # Call the base class constructor
         super(AnalogSensor, self).__init__(tag, low_limit, high_limit)
@@ -200,13 +192,14 @@ class AnalogSensor(_SensorBase, _SensorAbc):
         self._low_limit = float(self.low_limit)
         self._high_limit = float(self.high_limit)
 
-    def read(self):
+    def read(self) -> float:
         """Read the analog sensor data."""
 
-        self._last_value = random.uniform(self.low_limit, self.high_limit)
-        return self._last_value
+        value = random.uniform(self.low_limit, self.high_limit)
+        self._last_value = value
+        return value
 
-    def validate(self):
+    def validate(self) -> Self:
 
         # Validate the basic requirements for the sensor
         super().validate()

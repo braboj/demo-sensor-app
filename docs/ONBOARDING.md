@@ -6,15 +6,16 @@ commands see [PLAYBOOK.md](PLAYBOOK.md); for conventions see
 
 ## What it is
 
-Four services: an Angular SPA, a Flask REST API, a PostgreSQL database, and
-a standalone worker that simulates sensor readings. (Grafana is planned —
-see issue #7 — and not yet wired in.)
+Five services: an Angular SPA, a Flask REST API, a PostgreSQL database, a
+standalone worker that simulates sensor readings, and Grafana (datasource +
+dashboard provisioned as code from `deploy/grafana/provisioning/`).
 
 ```
 [ Angular SPA ] --HTTP/JSON--> [ Flask API ] --SQLAlchemy--> [ PostgreSQL ]
    :4200 (nginx)                 :5000 (gunicorn)               :5432
-                                      ^
-                                 [ worker ] (data generator)
+                                      ^                            ^
+                                 [ worker ] (data generator)      |
+                                                            [ Grafana ] :3000
 ```
 
 ## Prerequisites

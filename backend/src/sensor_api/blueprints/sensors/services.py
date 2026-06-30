@@ -8,12 +8,15 @@ from ...sensors import AnalogSensor, DiscreteSensor
 from .models import SensorData
 from .schemas import DEFAULT_LIMIT
 
+# The simulated field sensors, in the order readings are recorded.
+Sensors = tuple[AnalogSensor, AnalogSensor, DiscreteSensor]
+
 
 class SensorService(object):
     """Service class for handling sensor data."""
 
     @staticmethod
-    def build_sensors():
+    def build_sensors() -> Sensors:
         """Construct the simulated field sensors.
 
         Built once by the worker and reused across samples so each sensor
@@ -26,7 +29,7 @@ class SensorService(object):
         )
 
     @staticmethod
-    def record_reading(sensors):
+    def record_reading(sensors: Sensors) -> SensorData:
         """Sample the sensors and persist a single reading.
 
         Requires an active app context. On failure the session is rolled
@@ -50,7 +53,7 @@ class SensorService(object):
         return reading
 
     @staticmethod
-    def fetch_data(limit=DEFAULT_LIMIT):
+    def fetch_data(limit: int = DEFAULT_LIMIT) -> Sequence[SensorData]:
         """Return the latest sensor readings (ORM rows), newest first.
 
         Serialization is the boundary's job (see schemas.serialize_reading).

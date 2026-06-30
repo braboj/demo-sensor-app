@@ -42,7 +42,12 @@ repos:
         files: ^frontend/src/.*\.(ts|html|css|json)$
         pass_filenames: false
 
-# NOTE: mypy is intentionally not enabled yet. The backend is not fully
-# type-annotated and db.Model / flask_migrate need typing work first — the
-# same reason CI defers `mypy --strict`. Add a mypy hook here once the
-# annotations land.
+      # Strict type check — same as CI (`mypy src` from backend/). Local hook
+      # so it uses the backend's installed toolchain (pip install
+      # -r backend/requirements-dev.txt).
+      - id: mypy
+        name: mypy (backend, strict)
+        language: system
+        entry: bash -c 'cd backend && mypy src'
+        files: ^backend/.*\.py$
+        pass_filenames: false
