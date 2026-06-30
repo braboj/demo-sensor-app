@@ -33,3 +33,18 @@ th {
   font-style: normal;
   font-weight: 600;
 }
+
+.grafana-link {
+  margin: 8px 0 0;
+}
+
+.grafana-link a {
+  color: #1f6feb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.grafana-link a:hover,
+.grafana-link a:focus {
+  text-decoration: underline;
+}

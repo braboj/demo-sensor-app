@@ -4,4 +4,7 @@
 export const environment = {
   production: true,
   apiUrl: '/api/v1/sensors',
+  // Grafana dashboard URL; empty by default since Grafana is not part of the
+  // static (Render) deploy. Set GRAFANA_URL at build time to enable the link.
+  grafanaUrl: '',
 };
