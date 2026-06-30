@@ -3,6 +3,7 @@ import { Observable, Subject, of, throwError } from 'rxjs';
 import { HomeComponent } from './home.component';
 import { SensorService } from '../sensors.service';
 import { SensorData } from '../sensordata';
+import { environment } from '../../environments/environment';
 
 const rows: SensorData[] = [
   {
@@ -46,6 +47,17 @@ describe('HomeComponent', () => {
   it('should create', () => {
     const fixture = createFixture(() => of(rows));
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  it('links to the configured Grafana dashboard', () => {
+    const fixture = createFixture(() => of(rows));
+    fixture.detectChanges();
+
+    const link = (fixture.nativeElement as HTMLElement).querySelector(
+      '.grafana-link a',
+    );
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe(environment.grafanaUrl);
   });
 
   it('renders one table row per reading on success', () => {

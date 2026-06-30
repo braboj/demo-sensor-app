@@ -10,6 +10,10 @@
 //   - API_URL set   -> overwrite the file with that absolute URL.
 //   - API_URL unset -> leave the committed same-origin default untouched.
 //
+// `GRAFANA_URL` is optional and carried through the same way (empty disables
+// the in-app Grafana link); it only takes effect when API_URL triggers a
+// rewrite.
+//
 // It runs via the npm `prebuild` hook, so a plain `npm run build` stays correct
 // in every context (Render sets API_URL; compose and local builds do not).
 import { writeFileSync } from 'node:fs';
@@ -17,6 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const apiUrl = process.env.API_URL?.trim();
+const grafanaUrl = process.env.GRAFANA_URL?.trim() ?? '';
 
 if (!apiUrl) {
   console.log(
@@ -35,8 +40,12 @@ const contents = `// GENERATED AT BUILD TIME by scripts/set-api-url.mjs from the
 export const environment = {
   production: true,
   apiUrl: '${apiUrl}',
+  grafanaUrl: '${grafanaUrl}',
 };
 `;
 
 writeFileSync(target, contents);
-console.log(`[set-api-url] wrote environment.prod.ts with apiUrl=${apiUrl}`);
+console.log(
+  `[set-api-url] wrote environment.prod.ts with apiUrl=${apiUrl}` +
+    (grafanaUrl ? ` grafanaUrl=${grafanaUrl}` : ''),
+);
