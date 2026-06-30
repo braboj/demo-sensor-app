@@ -37,6 +37,13 @@ bind = f"0.0.0.0:{os.getenv('PORT', '5000')}"
 # in-process generator for a dedicated worker service there — see issue #15).
 workers = int(os.getenv("WEB_CONCURRENCY", "1"))
 
+# Cooperative worker class so the live SSE stream (/api/v1/sensors/stream) can
+# hold a long-lived connection without tying up the single web worker. gevent
+# monkey-patches at worker start, so the in-process generator's daemon thread
+# (post_worker_init below) runs as a cooperative greenlet rather than blocking.
+# Override with GUNICORN_WORKER_CLASS=sync where the stream is not needed.
+worker_class = os.getenv("GUNICORN_WORKER_CLASS", "gevent")
+
 _TRUTHY = {"1", "true", "yes", "on"}
 
 

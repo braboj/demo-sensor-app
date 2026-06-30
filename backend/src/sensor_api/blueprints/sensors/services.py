@@ -59,3 +59,20 @@ class SensorService(object):
             .limit(limit)
         )
         return db.session.execute(statement).scalars().all()
+
+    @staticmethod
+    def fetch_since(last_id, limit=DEFAULT_LIMIT):
+        """Return readings newer than ``last_id`` (ORM rows), oldest first.
+
+        Used by the live SSE stream to pull rows inserted since the last
+        event was sent. Ordered ascending by id so events arrive in the
+        order they were recorded and the caller can advance its cursor to
+        the final row's id.
+        """
+        statement = (
+            select(SensorData)
+            .where(SensorData.id > last_id)
+            .order_by(SensorData.id.asc())
+            .limit(limit)
+        )
+        return db.session.execute(statement).scalars().all()
