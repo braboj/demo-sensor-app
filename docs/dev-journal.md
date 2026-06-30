@@ -161,3 +161,47 @@ live `docker compose up`; and a Render-path Docker sim (migrate→gunicorn,
 ### Next
 
 Connect Render. Then features — #7 Grafana, #8 websockets; docs #10/#11.
+
+## 2026-06-30 — Deploy readiness review + gap triage (issues #59-#62)
+
+**Tool:** Claude Code (Opus 4.8) · **Type:** triage / tracking — no code changes.
+
+A planning session: reviewed Render deploy readiness, evaluated a sibling
+project's deploy pattern, and filed a ticket for every known gap.
+
+### Render deploy readiness
+
+Pre-flight of the shipped Blueprint (`render.yaml` + `render-start.sh` +
+`gunicorn.conf.py` + `set-api-url.mjs`) against the build config — all
+consistent (static output path, prod `environment.prod.ts` swap, `$PORT` bind,
+migrate-then-serve). Confirmed the first deploy is a one-time **owner** dashboard
+action (no Render CLI or API key in the environment) and that **no secrets** are
+added by hand (`SECRET_KEY` generated, `DATABASE_URL` auto-wired). Kept
+`autoDeploy: true` (push-based) for now.
+
+### randomgen deploy pattern (reference)
+
+Reviewed `braboj/demo-randomgen`: it deploys via `runtime: image` plus a
+release-tag CD that publishes to Docker Hub then POSTs a Render Deploy Hook. Its
+**AD-17** moved off `autoDeploy`-on-commit because it "did not fire reliably" —
+logged as a spike for sensor_app rather than adopted now.
+
+### Issues created (4)
+
+| #   | Title                                            | Note                                          |
+| --- | ------------------------------------------------ | --------------------------------------------- |
+| #59 | Deploy-trigger spike (deploy-hook vs autoDeploy) | `spike` P3 — output is an ADR                 |
+| #60 | Add committed `backend/.env.example`             | `task` P2 — tooling `.env*` guard left it out |
+| #61 | Gate `mypy --strict` in CI + pre-commit          | `task` P2 — needs annotations + typed model   |
+| #62 | Connect Blueprint in Render + verify live deploy | `task` P2 — owner go-live action              |
+
+### Epic #12 reconciled
+
+Ticked #29 (Blueprint shipped in #55) and added a "Phase 8 — Follow-ups" section
+linking #59-#62.
+
+### Next
+
+Owner: connect Render (#62). Then close the two convention gaps (#60 env
+template, #61 mypy gating) and the feature backlog (#7 Grafana, #8 websockets;
+docs #10/#11).
