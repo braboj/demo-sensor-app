@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "Live plant sensor readings from the sensor_data table (timestamps are UTC).",
+  "description": "Live plant sensor readings from the sensor_data table (timestamps are UTC). Use the Metric selector to choose which data points to chart.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -22,6 +22,7 @@
   "panels": [
     {
       "datasource": { "type": "postgres", "uid": "sensordb-pg" },
+      "description": "Raw readings for the selected metric(s) over the dashboard time range.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -43,12 +44,20 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Temperature (°C)" },
+            "matcher": { "id": "byName", "options": "Temperature" },
             "properties": [{ "id": "unit", "value": "celsius" }]
           },
           {
-            "matcher": { "id": "byName", "options": "Humidity (%)" },
+            "matcher": { "id": "byName", "options": "Humidity" },
             "properties": [{ "id": "unit", "value": "humidity" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Vibration" },
+            "properties": [
+              { "id": "custom.axisPlacement", "value": "right" },
+              { "id": "max", "value": 1 },
+              { "id": "min", "value": 0 }
+            ]
           }
         ]
       },
@@ -58,54 +67,73 @@
         "legend": { "calcs": ["last", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
         "tooltip": { "mode": "multi", "sort": "none" }
       },
-      "title": "Temperature & Humidity",
+      "title": "Selected readings",
       "type": "timeseries",
       "targets": [
         {
           "datasource": { "type": "postgres", "uid": "sensordb-pg" },
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT timestamp AS \"time\", temperature AS \"Temperature (°C)\", humidity AS \"Humidity (%)\" FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp",
+          "rawSql": "SELECT timestamp AS \"time\", metric, value FROM (SELECT timestamp, 'Temperature' AS metric, temperature AS value FROM sensor_data UNION ALL SELECT timestamp, 'Humidity' AS metric, humidity AS value FROM sensor_data UNION ALL SELECT timestamp, 'Vibration' AS metric, vibration AS value FROM sensor_data) m WHERE metric IN (${metric:singlequote}) AND $__timeFilter(timestamp) ORDER BY timestamp",
           "refId": "A"
         }
       ]
     },
     {
       "datasource": { "type": "postgres", "uid": "sensordb-pg" },
-      "description": "Vibration is a coded value: 0 = no vibration detected, 1 = vibration detected.",
+      "description": "10-point moving average per metric, smoothing the random per-sample noise into a directional trend. Vibration's average reads as the recent rate of detections.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
             "axisPlacement": "auto",
             "drawStyle": "line",
-            "fillOpacity": 25,
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 2,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
             "pointSize": 5,
-            "showPoints": "auto",
+            "showPoints": "never",
             "spanNulls": true
           },
-          "max": 1,
-          "min": 0,
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Temperature" },
+            "properties": [{ "id": "unit", "value": "celsius" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Humidity" },
+            "properties": [{ "id": "unit", "value": "humidity" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Vibration" },
+            "properties": [
+              { "id": "custom.axisPlacement", "value": "right" },
+              { "id": "max", "value": 1 },
+              { "id": "min", "value": 0 }
+            ]
+          }
+        ]
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 9 },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 },
       "id": 2,
       "options": {
-        "legend": { "calcs": ["last"], "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "legend": { "calcs": ["last", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
       },
-      "title": "Vibration (0 = none, 1 = detected)",
+      "title": "Trend (10-point moving average)",
       "type": "timeseries",
       "targets": [
         {
           "datasource": { "type": "postgres", "uid": "sensordb-pg" },
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT timestamp AS \"time\", vibration AS \"Vibration\" FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp",
+          "rawSql": "SELECT timestamp AS \"time\", metric, AVG(value) OVER (PARTITION BY metric ORDER BY timestamp ROWS BETWEEN 9 PRECEDING AND CURRENT ROW) AS value FROM (SELECT timestamp, 'Temperature' AS metric, temperature AS value FROM sensor_data UNION ALL SELECT timestamp, 'Humidity' AS metric, humidity AS value FROM sensor_data UNION ALL SELECT timestamp, 'Vibration' AS metric, vibration AS value FROM sensor_data) m WHERE metric IN (${metric:singlequote}) AND $__timeFilter(timestamp) ORDER BY timestamp",
           "refId": "A"
         }
       ]
@@ -114,12 +142,34 @@
   "refresh": "10s",
   "schemaVersion": 39,
   "tags": ["sensor", "plant"],
-  "templating": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] },
+        "description": "Which data points to chart.",
+        "includeAll": true,
+        "label": "Metric",
+        "multi": true,
+        "name": "metric",
+        "options": [
+          { "selected": true, "text": "All", "value": "$__all" },
+          { "selected": false, "text": "Temperature", "value": "Temperature" },
+          { "selected": false, "text": "Humidity", "value": "Humidity" },
+          { "selected": false, "text": "Vibration", "value": "Vibration" }
+        ],
+        "query": "Temperature,Humidity,Vibration",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "utc",
   "title": "Sensor Readings",
   "uid": "sensor-readings",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
