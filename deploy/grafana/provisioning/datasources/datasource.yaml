@@ -1,6 +1,8 @@
 # Grafana datasource, provisioned as code (CLAUDE.md §2.8).
-# Credentials are interpolated from environment variables passed to the
-# grafana service in docker-compose.yml — no secrets are committed here.
+# Connection fields are interpolated from environment variables — no secrets
+# are committed here. docker-compose.yml passes them directly; on Render the
+# entrypoint (deploy/grafana/render-entrypoint.sh) derives them from the managed
+# database's connection string.
 apiVersion: 1
 
 datasources:
@@ -8,7 +10,7 @@ datasources:
     uid: sensordb-pg
     type: postgres
     access: proxy
-    url: db:5432
+    url: ${POSTGRES_HOST}:${POSTGRES_PORT}
     user: ${POSTGRES_USER}
     # `database` is the canonical top-level field for SQL datasources.
     database: ${POSTGRES_DB}
@@ -18,6 +20,7 @@ datasources:
     secureJsonData:
       password: ${POSTGRES_PASSWORD}
     jsonData:
-      sslmode: disable
+      # `disable` for the compose stack; `require` on Render (managed PG needs SSL).
+      sslmode: ${POSTGRES_SSLMODE}
       postgresVersion: 1600
       timescaledb: false
