@@ -22,7 +22,7 @@ def get_all_sensors():
 
 
 @api.route('/sensors/stream', methods=['GET'])
-def stream_sensors():
+def stream_sensors() -> Response:
     """Stream sensor readings live over SSE (``text/event-stream``).
 
     The browser opens one long-lived connection (``EventSource``) and receives

@@ -1,4 +1,6 @@
 # encoding: utf-8
+from collections.abc import Sequence
+
 from sqlalchemy import select
 
 from ...extensions import db
@@ -61,7 +63,9 @@ class SensorService(object):
         return db.session.execute(statement).scalars().all()
 
     @staticmethod
-    def fetch_since(last_id, limit=DEFAULT_LIMIT):
+    def fetch_since(
+        last_id: int, limit: int = DEFAULT_LIMIT
+    ) -> Sequence[SensorData]:
         """Return readings newer than ``last_id`` (ORM rows), oldest first.
 
         Used by the live SSE stream to pull rows inserted since the last
