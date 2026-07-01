@@ -108,20 +108,20 @@ Operational endpoints: `GET /health` (liveness — 200 if the process is up) and
 
 ## Project structure
 
-```text
-backend/                # Flask REST API + data-generator worker
-  src/sensor_api/       # app factory, config, blueprints (sensors, health), worker
-  migrations/           # Alembic migrations
-  tests/                # pytest suite
-frontend/               # Angular SPA (standalone components)
-  src/app/home/         # live readings table + SSE
-  src/app/charts/       # embedded Grafana dashboard
-  src/environments/     # API / Grafana URLs (dev + prod)
-deploy/grafana/         # Grafana image + datasource/dashboard provisioned as code
-docs/                   # ONBOARDING, PLAYBOOK, DEPLOY, decisions (ADRs), history
-docker-compose.yml      # full local stack (backend, frontend, db, grafana, worker)
-render.yaml             # Render free-tier blueprint
-```
+| Path | Purpose |
+|------|---------|
+| `backend/` | Flask REST API + data-generator worker |
+| `backend/src/sensor_api/` | App factory, config, blueprints (sensors, health), worker |
+| `backend/migrations/` | Alembic migrations |
+| `backend/tests/` | pytest suite |
+| `frontend/` | Angular SPA (standalone components) |
+| `frontend/src/app/home/` | Live readings table + SSE |
+| `frontend/src/app/charts/` | Embedded Grafana dashboard |
+| `frontend/src/environments/` | API / Grafana URLs (dev + prod) |
+| `deploy/grafana/` | Grafana image + datasource/dashboard provisioned as code |
+| `docs/` | ONBOARDING, PLAYBOOK, DEPLOY, decisions (ADRs), history |
+| `docker-compose.yml` | Full local stack (backend, frontend, db, grafana, worker) |
+| `render.yaml` | Render free-tier blueprint |
 
 ## Development
 
