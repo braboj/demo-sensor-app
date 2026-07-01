@@ -68,58 +68,13 @@ chain (`stack-flask` + frontend layer + platform):
 - Grafana reads from PostgreSQL (or a metrics backend) via a
   provisioned, version-controlled datasource — no manual UI config.
 
-### 1.3 Project structure (target)
+### 1.3 Project structure
 
-```
-backend/
-  src/
-    sensor_api/
-      __init__.py        # create_app(config=None) factory ONLY
-      config.py          # DevelopmentConfig, TestingConfig, ProductionConfig
-      extensions.py      # db, migrate instances (init_app inside factory)
-      blueprints/
-        sensors/
-          __init__.py
-          routes.py      # /api/v1/sensors
-          models.py      # SensorData
-          schemas.py     # request/response validation + serialization
-          services.py    # query/business logic (no logic in routes)
-        health/
-          routes.py      # /health (liveness), /ready (readiness)
-      sensors/           # sensor simulation domain (AnalogSensor, ...)
-      errors.py          # error types + registered Flask error handlers
-    worker.py            # standalone data-generator entrypoint (see 2.6)
-  migrations/            # Alembic migrations (committed)
-  tests/
-    conftest.py          # app fixture (TestingConfig), client, test DB
-    test_*.py
-  pyproject.toml         # ruff, mypy, pytest config
-  .env.example           # committed — never .env
-  .dockerignore
-  Dockerfile             # multi-stage; runs gunicorn
-frontend/
-  src/
-    app/                 # standalone components, services, models
-    environments/        # environment.ts / environment.prod.ts (API URL)
-  .dockerignore
-  Dockerfile             # multi-stage build -> nginx serves dist/
-  package.json           # name: sensor-app-frontend; project: sensor-app
-deploy/
-  grafana/
-    provisioning/
-      datasources/       # datasource.yaml (Postgres) — as code
-      dashboards/        # dashboard provider + JSON dashboards
-docs/
-  audits/                # 360 audit reports (YYYY-MM-DD-360.md)
-  history/               # ASSIGNMENT.md, SOLUTION.md
-  solid-ai-templates/    # vendored conventions submodule
-  ONBOARDING.md          # (to generate)
-  PLAYBOOK.md            # (to generate)
-  dev-journal.md         # (to generate)
-docker-compose.yml
-README.md
-CLAUDE.md
-```
+The directory layout lives in [README.md](README.md) — the single source
+of truth for project structure (`base/core/docs.md`). Per-component rules
+(what each file must contain: `__init__.py` is the `create_app` factory only,
+routes stay thin, services own the logic, schema comes from migrations) are in
+§§ 2.3–2.6 below.
 
 ### 1.4 Commands
 
