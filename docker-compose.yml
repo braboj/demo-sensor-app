@@ -94,6 +94,8 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
+      # Allow the Angular SPA to embed the dashboard in an <iframe>.
+      - GF_SECURITY_ALLOW_EMBEDDING=true
       # Consumed by deploy/grafana/provisioning/datasources/datasource.yaml.
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
