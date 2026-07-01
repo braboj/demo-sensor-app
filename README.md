@@ -1,5 +1,6 @@
 [![CI](https://github.com/braboj/demo-sensor-app/actions/workflows/ci.yml/badge.svg)](https://github.com/braboj/demo-sensor-app/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/braboj/demo-sensor-app/actions/workflows/codeql.yml/badge.svg)](https://github.com/braboj/demo-sensor-app/actions/workflows/codeql.yml)
+[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
 
 # Sensor Dashboard
 
@@ -32,14 +33,12 @@ cold-start for ~30–60s.
 - **Deployable** — a free-tier [Render blueprint](render.yaml) runs the whole
   stack (see [Deploy](docs/DEPLOY.md)).
 
-## Requirements
+## Quick start
 
-To run the application, install:
+Prerequisites:
 
 - [Docker](https://docs.docker.com/engine/install/)
 - [git](https://git-scm.com/downloads)
-
-## Quick start
 
 Clone the repository and start the full stack:
 
@@ -107,6 +106,72 @@ curl -N http://localhost:5000/api/v1/sensors/stream
 Operational endpoints: `GET /health` (liveness — 200 if the process is up) and
 `GET /ready` (readiness — 200 if the database is reachable, else 503).
 
+## Project structure
+
+```text
+backend/                # Flask REST API + data-generator worker
+  src/sensor_api/       # app factory, config, blueprints (sensors, health), worker
+  migrations/           # Alembic migrations
+  tests/                # pytest suite
+frontend/               # Angular SPA (standalone components)
+  src/app/home/         # live readings table + SSE
+  src/app/charts/       # embedded Grafana dashboard
+  src/environments/     # API / Grafana URLs (dev + prod)
+deploy/grafana/         # Grafana image + datasource/dashboard provisioned as code
+docs/                   # ONBOARDING, PLAYBOOK, DEPLOY, decisions (ADRs), history
+docker-compose.yml      # full local stack (backend, frontend, db, grafana, worker)
+render.yaml             # Render free-tier blueprint
+```
+
+## Development
+
+`docker compose up` (above) runs the whole stack. To work on a service on its
+own — PostgreSQL is the only external dependency (`docker compose up db` starts
+one):
+
+Backend (Python 3.12, from `backend/`):
+
+```bash
+pip install -r requirements.txt
+pytest && mypy src --strict          # tests + strict type check
+flask --app sensor_api run           # dev server (needs a reachable PostgreSQL)
+python -m sensor_api.worker          # run the data generator
+```
+
+Frontend (Node 22, from `frontend/`):
+
+```bash
+npm ci
+npm start                            # ng serve on :4200
+npm test && npx eslint .             # unit tests + lint
+```
+
+The backend reads its configuration from environment variables — copy the
+committed `backend/.env.example` to `backend/.env` and adjust. See
+[Onboarding](docs/ONBOARDING.md) for full setup and [Playbook](docs/PLAYBOOK.md)
+for day-to-day commands.
+
+## Configuration
+
+Services are configured through environment variables (documented in
+`backend/.env.example` and [`docker-compose.yml`](docker-compose.yml)); the most
+important:
+
+| Variable | Service | Default | Description |
+|----------|---------|---------|-------------|
+| `DATABASE_URL` | backend, grafana | — | PostgreSQL connection string. |
+| `SECRET_KEY` | backend | — | Flask secret key (**sensitive** — set your own). |
+| `CORS_ORIGINS` | backend | — | Allowed frontend origin (never `*`). |
+| `APP_CONFIG` | backend | `production` | Config profile (`development` / `production`). |
+| `SAMPLE_INTERVAL_SECONDS` | backend, worker | `10` | Generator sample interval. |
+| `RUN_INPROCESS_GENERATOR` | backend | `false` | Run the generator in-process (free-tier only). |
+| `WEB_CONCURRENCY` | backend | `1` | gunicorn worker count. |
+| `API_URL` | frontend (build) | same-origin `/api/v1/sensors` | Absolute backend URL baked into the bundle. |
+| `GRAFANA_URL` | frontend (build) | empty | Grafana dashboard URL for the Charts view. |
+| `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` | grafana | — | Local admin login (**sensitive**). |
+
+See [Deploy](docs/DEPLOY.md) for the full deployment variable set.
+
 ## Deploy
 
 The repo ships a [`render.yaml`](render.yaml) blueprint that runs the whole
@@ -123,3 +188,7 @@ static frontend, and Grafana. The live demo above runs from this blueprint. See
 - To read about the solution, see the [Solution](docs/history/SOLUTION.md)
 - To contribute, see [Contributing](CONTRIBUTING.md)
 - To leave feedback, visit [Discussions](https://github.com/braboj/demo-sensor-app/discussions)
+
+## License
+
+Released into the public domain under [The Unlicense](LICENSE).
