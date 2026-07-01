@@ -19,17 +19,14 @@ cold-start for ~30–60s.
 ## Features
 
 - **Live table** — Angular SPA (standalone components) with explicit loading,
-  empty, and error states; new readings arrive over **Server-Sent Events**, not
-  polling.
+  empty, and error states; new readings arrive over **Server-Sent Events**
 - **Charts** — the embedded Grafana "Sensor Readings" dashboard with a metric
   selector (temperature / humidity / vibration) and a moving-average trend,
   provisioned as code.
 - **Versioned REST API** — `/api/v1/sensors` with a bounded `?limit=`, ISO-8601
   UTC timestamps, and RFC 9457 JSON errors; plus `/health` and `/ready`.
-- **Separate generator** — the simulator runs as its own worker process, not a
+- **Sensor Simulator** — the simulator runs as its own worker process, not a
   thread inside the web app.
-- **One command** — `docker compose up` starts the backend, frontend,
-  PostgreSQL, Grafana, and the worker; the schema comes from Alembic migrations.
 - **Deployable** — a free-tier [Render blueprint](render.yaml) runs the whole
   stack (see [Deploy](docs/DEPLOY.md)).
 
