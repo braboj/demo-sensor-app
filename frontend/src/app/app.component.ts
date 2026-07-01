@@ -1,27 +1,34 @@
 import { Component } from '@angular/core';
-import { HomeComponent } from './home/home.component';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   /**
-   * Component storing the content.
-   *
-   * This is the main component of the application. It contains the header and
-   * the main content of the application. The content is handled by the
-   * HomeComponent.
+   * Root component: the static header (logo + nav) and a router outlet. Two
+   * views are routed — the live readings table (default) and the embedded
+   * Grafana charts (see app.routes.ts).
    */
 
   selector: 'app-root',
-  imports: [HomeComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <main>
-      <!-- Header section is static and contains the logo -->
+      <!-- Header: logo + primary navigation -->
       <header class="brand-name">
         <img class="brand-logo" src="../assets/logo.svg" alt="" />
+        <nav class="nav" aria-label="Primary">
+          <a
+            routerLink="/"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Live Table</a
+          >
+          <a routerLink="/charts" routerLinkActive="active">Charts</a>
+        </nav>
       </header>
 
-      <!-- Content section is handled by the home component -->
+      <!-- Routed view -->
       <section class="content">
-        <app-home></app-home>
+        <router-outlet></router-outlet>
       </section>
     </main>
   `,

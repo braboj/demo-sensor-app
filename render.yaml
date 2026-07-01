@@ -100,6 +100,10 @@ services:
         value: Viewer
       - key: GF_USERS_ALLOW_SIGN_UP
         value: "false"
+      # Allow the Angular SPA to embed the dashboard in an <iframe> (drops the
+      # X-Frame-Options deny). Safe here: the instance is anonymous read-only.
+      - key: GF_SECURITY_ALLOW_EMBEDDING
+        value: "true"
       # Admin password for the (otherwise read-only) instance; generated, never
       # committed. Reset on each deploy, which is fine for a provisioned setup.
       - key: GF_SECURITY_ADMIN_PASSWORD
