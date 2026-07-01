@@ -330,3 +330,70 @@ Phase 4 features #7/#8/#3 and Phase 8 #60/#61/#62 ticked. Still open are
 
 - #10/#11 — confirm the doc issues are satisfied by the shipped docs and close.
 - #59 — deploy-trigger spike (autoDeploy vs deploy-hook), deferred.
+
+## 2026-07-01 — Grafana on Render, embedded charts, docs polish
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated.
+
+Extended the live deploy with Grafana, embedded the dashboard in the SPA, and
+did a documentation/licence pass.
+
+### PRs merged (10)
+
+- **#73** deploy Grafana to the live Render stack (closes #72) — 4th service
+  `sensor-app-grafana` from a thin `deploy/grafana/Dockerfile` that bakes the
+  provisioning; entrypoint binds `$PORT` and parses `DATABASE_URL` (Render
+  exposes only a connection string); anonymous read-only view. **ADR-0007**.
+- **#74** dashboard v2 — a `metric` template variable
+  (Temperature/Humidity/Vibration) + a "Trend (10-point moving average)" panel;
+  long-format queries filtered by the selector. Satisfies the assignment's
+  "select which data points to visualize" requirement.
+- **#75** embed Grafana in the SPA — Angular Router (`/` Live Table +
+  `/charts`), `ChartsComponent` = sanitized iframe (`?kiosk`) with an "Open in
+  Grafana" fallback; `GF_SECURITY_ALLOW_EMBEDDING=true`.
+- **#76** remove the leftover "Homes" logo; **#77** remove the redundant
+  in-table Grafana link (charts live on the Charts tab now).
+- **#78** README overhaul (closes #11) + relicence to **MIT** — live-demo link,
+  CI/CodeQL/MIT badges, Features list, sample response, and full
+  template-structure alignment (Project structure table, Development,
+  Configuration, License).
+- **#79** rename `REFACTOR-PLAN.md` → `refactor-plan.md` (docs casing
+  convention); **#80** rewrite `CONTRIBUTING.md` to match the real conventions
+  (was boilerplate prescribing the wrong commit/versioning schemes); **#81**
+  replace CLAUDE.md §1.3 structure tree with a README pointer; **#82** tidy the
+  README Features list.
+
+### Key decisions
+
+- **Grafana on the live deploy** (**ADR-0007**) — reverses ADR-0004's "no
+  Grafana on the free tier"; bakes provisioning into the image (no persistent
+  disk) + anonymous read-only view.
+- **Embed vs link** — embed the dashboard in a Charts route (kiosk iframe) for a
+  single-page demo; keep the external link as a fallback.
+- **Licence → MIT** (from The Unlicense); copyright "Branimir Georgiev".
+
+### Verification
+
+Every PR CI-gated. Grafana verified **live** on Render: `/api/health` ok, an
+anonymous datasource query returned managed-Postgres rows over
+`sslmode=require`, the dashboard renders the metric selector + trend, and the
+SPA `/charts` embeds it (no `X-Frame-Options`). Frontend gates green throughout
+(eslint + prettier + build + karma).
+
+### Issues filed
+
+- Upstream (`braboj/solid-ai-templates`): **#713** (project structure as a
+  table), **#714** (drop SHOUT-case for guide-doc filenames), **#715** (split
+  the dev journal per session), **#716** (README-SSOT vs the CLAUDE.md
+  Project-structure MUST — the conflict #81 exposed).
+- This repo: **#83** modernise `frontend/tsconfig.json` to the Angular 19
+  defaults; **#84** frontend design polish (cf. demo-randomgen) — closed
+  **wontdo** (keep the frontend minimal per §4).
+
+### Next
+
+- **#10** — decide whether the shipped docs satisfy "documentation & web pages",
+  then close or scope the remainder.
+- **#83** tsconfig modernisation; **#59** deploy-trigger spike (deferred).
+- Epic **#12** is all-but-complete (only #10 + the deferred #59 remain).
