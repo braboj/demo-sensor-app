@@ -57,8 +57,9 @@ step, the data-generator worker, and Grafana:
 - [Grafana / localhost:3000](http://localhost:3000)
 
 Grafana ships with a PostgreSQL datasource and the "Sensor Readings" dashboard
-provisioned as code (`deploy/grafana/provisioning/`). Log in with `admin` /
-`admin` (override via `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`).
+provisioned as code (`deploy/grafana/provisioning/`). The admin login is set via
+the `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` environment variables (see
+`docker-compose.yml`) — set your own before exposing Grafana beyond local use.
 
 ## Usage
 
