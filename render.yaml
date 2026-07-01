@@ -8,6 +8,12 @@
 # Connect the repo in the Render dashboard ("New +" -> "Blueprint"). See
 # docs/DEPLOY.md for the full walkthrough and the free-tier caveats.
 #
+# Deploys are CI-triggered, not push-based: autoDeploy is off on every service,
+# and .github/workflows/ci.yml POSTs a Render deploy hook per service after the
+# checks pass on main (ADR-0009). Create the hooks in the Render dashboard and
+# store their URLs as the RENDER_DEPLOY_HOOK_{BACKEND,FRONTEND,GRAFANA} GitHub
+# secrets; until then the deploy step skips and no deploy fires.
+#
 # NOTE: the two cross-service URLs below are derived from the service names. If
 # Render appends a suffix because a name is already taken in your account,
 # update CORS_ORIGINS and API_URL to the real URLs and redeploy.
@@ -30,7 +36,7 @@ services:
     # gunicorn.conf.py binds $PORT and starts the in-process generator.
     dockerCommand: sh render-start.sh
     healthCheckPath: /health
-    autoDeploy: true
+    autoDeploy: false
     envVars:
       - key: APP_CONFIG
         value: production
@@ -58,7 +64,7 @@ services:
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist/sensor-app/browser
-    autoDeploy: true
+    autoDeploy: false
     envVars:
       # Baked into the bundle at build time by scripts/set-api-url.mjs — the
       # absolute backend endpoint, since the SPA and API are different origins.
@@ -82,7 +88,7 @@ services:
     dockerfilePath: ./deploy/grafana/Dockerfile
     dockerContext: ./deploy/grafana
     healthCheckPath: /api/health
-    autoDeploy: true
+    autoDeploy: false
     envVars:
       # Render exposes the managed DB as a connection string (host/port are not
       # individually referenceable); the entrypoint parses it into the

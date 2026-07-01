@@ -102,9 +102,11 @@ protected — merge via PR on green CI.
 
 Deployment is a version-controlled Blueprint, [`render.yaml`](../render.yaml)
 (managed Postgres + Docker backend + static frontend). There is no deploy CLI
-step — connect the repo once in the Render dashboard (**New + → Blueprint**) and
-pushes to the deployed branch auto-deploy. Full walkthrough and free-tier
-caveats: [DEPLOY.md](DEPLOY.md).
+step — connect the repo once in the Render dashboard (**New + → Blueprint**).
+Deploys are CI-triggered, not push-based: `autoDeploy` is off, and the `deploy`
+job in CI POSTs a Render deploy hook per service after the checks pass on `main`
+([ADR-0009](decisions/0009-render-deploy-hook-trigger.md)). Full walkthrough,
+the deploy-hook secrets, and free-tier caveats: [DEPLOY.md](DEPLOY.md).
 
 Verify a running deploy:
 

@@ -83,3 +83,34 @@ jobs:
       - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy is CI-triggered, not push-based (ADR-0009): render.yaml sets
+  # autoDeploy:false, and this job POSTs a Render deploy hook per service once
+  # the checks above pass on main. Each POST is skipped when its secret is unset,
+  # so the workflow stays green before the hooks exist and on forks / PRs.
+  deploy:
+    name: Deploy (Render hooks)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend, gitleaks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Render deploys
+        env:
+          BACKEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+          FRONTEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+          GRAFANA_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_GRAFANA }}
+        run: |
+          trigger() {
+            name="$1"
+            hook="$2"
+            if [ -z "$hook" ]; then
+              echo "::notice::$name deploy hook unset — skipping"
+              return 0
+            fi
+            echo "Triggering $name deploy…"
+            curl -fsS -X POST "$hook" > /dev/null
+            echo "$name deploy triggered."
+          }
+          trigger backend "$BACKEND_HOOK"
+          trigger frontend "$FRONTEND_HOOK"
+          trigger grafana "$GRAFANA_HOOK"
