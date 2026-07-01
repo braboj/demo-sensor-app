@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Subscription, catchError, of } from 'rxjs';
 import { SensorService } from '../sensors.service';
 import { SensorData } from '../sensordata';
-import { environment } from '../../environments/environment';
 
 // Cap the live table so an always-open stream cannot grow it without bound.
 const MAX_ROWS = 100;
@@ -23,14 +22,6 @@ const MAX_ROWS = 100;
   template: `
     <section class="results">
       <h2>Latest Sensor Data</h2>
-
-      @if (grafanaUrl) {
-        <p class="grafana-link">
-          <a [href]="grafanaUrl" target="_blank" rel="noopener noreferrer">
-            View charts in Grafana ↗
-          </a>
-        </p>
-      }
 
       @if (live) {
         <p class="status status-live" role="status">
@@ -102,10 +93,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   // SSE connection failed.
   live = false;
   liveError = false;
-
-  // Optional link to the Grafana dashboard (charting lives there); empty when
-  // Grafana is not part of the deploy (see environments/environment*.ts).
-  readonly grafanaUrl = environment.grafanaUrl;
 
   // Inject the sensor service
   private readonly sensorService = inject(SensorService);
