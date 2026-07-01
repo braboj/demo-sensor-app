@@ -1,6 +1,6 @@
 [![CI](https://github.com/braboj/demo-sensor-app/actions/workflows/ci.yml/badge.svg)](https://github.com/braboj/demo-sensor-app/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/braboj/demo-sensor-app/actions/workflows/codeql.yml/badge.svg)](https://github.com/braboj/demo-sensor-app/actions/workflows/codeql.yml)
-[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 # Sensor Dashboard
 
@@ -191,4 +191,4 @@ static frontend, and Grafana. The live demo above runs from this blueprint. See
 
 ## License
 
-Released into the public domain under [The Unlicense](LICENSE).
+Licensed under the [MIT License](LICENSE).
