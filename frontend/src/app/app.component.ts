@@ -12,9 +12,8 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <main>
-      <!-- Header: logo + primary navigation -->
+      <!-- Header: primary navigation -->
       <header class="brand-name">
-        <img class="brand-logo" src="../assets/logo.svg" alt="" />
         <nav class="nav" aria-label="Primary">
           <a
             routerLink="/"
