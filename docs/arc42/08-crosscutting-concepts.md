@@ -110,7 +110,9 @@ The worker logs each meaningful step — start, each recorded reading, and any
 failure (with a traceback); debug logging is never on in production. Operators
 have two probes for two questions: `GET /health` answers "is the process alive?"
 without touching any dependency, and `GET /ready` answers "can it serve?" by
-running `SELECT 1` and returning 503 when the database is unreachable.
+running `SELECT 1` and returning 503 when the database is unreachable. Locally,
+Docker Compose gates dependent services on `/ready`; the hosted platform, which
+exposes a single health path, probes `/health`.
 
 | Aspect | Implementation |
 | --- | --- |
