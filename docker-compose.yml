@@ -15,8 +15,12 @@ services:
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    # Readiness (GET /ready): 200 only when the database is reachable, so
+    # dependents gated on `service_healthy` wait until the API can actually
+    # serve — not merely until the process is up. Liveness lives at /health;
+    # the hosted platform, which exposes a single health path, probes that.
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/ready')"]
       interval: 10s
       retries: 5
       start_period: 15s

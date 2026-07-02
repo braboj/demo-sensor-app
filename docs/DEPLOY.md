@@ -136,6 +136,21 @@ adds a reading every 10s), and follow the "View charts in Grafana" link — the
 `Sensor Readings` dashboard renders the temperature/humidity and vibration
 panels from the managed Postgres.
 
+### Liveness vs. readiness
+
+The backend exposes two probes. `GET /health` is **liveness** — 200 whenever the
+process is up, with no dependencies — so a transient database blip never causes
+the platform to restart an otherwise-healthy container. `GET /ready` is
+**readiness** — it runs `SELECT 1` and returns 503 when the database is
+unreachable.
+
+Locally, Docker Compose gates dependent services on **readiness**: the backend's
+healthcheck probes `/ready`, so the frontend only starts once the API can
+actually serve. On Render, a service exposes a single `healthCheckPath`, used as
+a liveness / deploy-health signal, so it stays on `/health` (a DB hiccup must not
+fail the backend's deploy); `/ready` remains available for manual and
+operational checks, and for any platform that distinguishes the two.
+
 ## Troubleshooting
 
 - **Frontend shows an error / empty state.** Check the browser console for a
