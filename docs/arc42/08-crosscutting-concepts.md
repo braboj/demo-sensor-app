@@ -132,6 +132,7 @@ nginx — never a dev server — run in the images.
 | Secrets | none in the repo; gitleaks scans in CI and pre-commit; `SECRET_KEY` generated per deploy on the host |
 | CORS | scoped to `CORS_ORIGINS`; never a wildcard |
 | Debug / server | debug off; gunicorn (backend) and nginx (frontend) in every image |
+| Container user | both images run as a non-root user; the backend is a multi-stage build |
 | Grafana | anonymous read-only viewer on the hosted demo; embedding enabled deliberately because the instance is read-only (ADR-0008) |
 | Transport | services speak plain HTTP; the platform edge terminates TLS |
 
