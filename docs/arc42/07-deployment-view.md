@@ -139,7 +139,7 @@ by [`render-start.sh`](../../backend/render-start.sh), which runs
 
 | Service | Base image | Build | Process |
 | --- | --- | --- | --- |
-| backend | `python:3.12-slim` (pinned) | Single stage; installs from `requirements.txt` | gunicorn serving `sensor_api:create_app()`, binding `$PORT`. |
+| backend | `python:3.12-slim` (pinned) | Multi-stage: deps built in a builder stage, then a slim runtime that runs as a non-root user | gunicorn serving `sensor_api:create_app()`, binding `$PORT`. |
 | frontend | `node:22-alpine` → `nginx:1.27-alpine` (pinned) | Multi-stage: build the Angular bundle, copy it into nginx | nginx serves the static bundle and reverse-proxies `/api`. |
 | grafana | `grafana/grafana:11.4.0` (pinned) | Bakes the provisioning files and a small entrypoint into the image | Grafana; the entrypoint maps `$PORT` and expands `DATABASE_URL` into the datasource. |
 
