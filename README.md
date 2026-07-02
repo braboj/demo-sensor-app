@@ -117,6 +117,7 @@ Operational endpoints: `GET /health` (liveness — 200 if the process is up) and
 | `frontend/src/environments/` | API / Grafana URLs (dev + prod) |
 | `deploy/grafana/` | Grafana image + datasource/dashboard provisioned as code |
 | `docs/` | ONBOARDING, PLAYBOOK, DEPLOY, decisions (ADRs), history |
+| `docs/arc42/` | Architecture documentation (arc42) |
 | `docker-compose.yml` | Full local stack (backend, frontend, db, grafana, worker) |
 | `render.yaml` | Render free-tier blueprint |
 
@@ -178,6 +179,7 @@ static frontend, and Grafana. The live demo above runs from this blueprint. See
 
 ## Next steps
 
+- To understand the architecture, see the [Architecture docs (arc42)](docs/arc42/README.md)
 - To set up a dev environment, see [Onboarding](docs/ONBOARDING.md)
 - For day-to-day commands, see the [Playbook](docs/PLAYBOOK.md)
 - To deploy on Render (free tier), see [Deploy](docs/DEPLOY.md)

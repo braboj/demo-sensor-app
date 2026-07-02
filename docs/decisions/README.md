@@ -13,3 +13,4 @@ numbered. Format: Status / Context / Decision / Consequences.
 - [ADR-0008](0008-embed-grafana-in-spa.md) — Embed the Grafana dashboard in the SPA
 - [ADR-0009](0009-render-deploy-hook-trigger.md) — Trigger Render deploys with a CI deploy hook, not push-based autoDeploy
 - [ADR-0010](0010-scalable-render-deploy-manifest-matrix.md) — Scale multi-service Render deploys with a manifest-driven CI matrix
+- [ADR-0011](0011-arc42-documentation.md) — arc42 architecture documentation (static-site/Pages scope dropped)
