@@ -1,6 +1,13 @@
 # ADR-0010 — Scale multi-service Render deploys with a manifest-driven CI matrix
 
-**Status:** Accepted (2026-07-02, spike #91) — target design; generalizes ADR-0009
+**Status:** Accepted (2026-07-02, spike #91) — target design; supersedes
+[ADR-0009](0009-render-deploy-hook-trigger.md)
+
+**Current mechanism:** deploys stay on Render Blueprint `autoDeploy` (as shipped
+in #55). ADR-0009's switch to CI-triggered deploy hooks was evaluated and
+**dropped** as unnecessary for a three-service demo (#88 / PR #90 closed). This
+ADR is the **target** design to adopt if/when the fleet grows toward the scale
+below — not a change shipping now.
 
 ## Context
 ADR-0009 made deploys CI-triggered by POSTing one hardcoded Render deploy hook
@@ -109,14 +116,15 @@ push to main
   reconciliation are needed — migrate to the GitOps/K8s tier with immutable
   digests. Notably the ADR-0009 rationale for skipping `runtime: image` (no
   CI-built image to reuse) **inverts** at that tier: build-once-promote-a-digest
-  becomes mandatory. See the sibling `demo-randomgen` AD-17 (the `runtime: image`
-  + hook pattern) and the general principle upstreamed as
+  becomes mandatory. See the sibling `demo-randomgen` AD-17 (its `runtime: image`
+  deploy-hook pattern) and the general principle upstreamed as
   solid-ai-templates#717.
-- **Relationship to ADR-0009 / #88 / #90.** This generalizes ADR-0009: the
-  hook-per-service is the degenerate one-tier, no-change-detection instance of
-  the same "CI-triggered, not push-based" principle. Implementing this design
-  would supersede the hardcoded hooks (#88 / PR #90); until then, #90 stays the
-  current small-fleet mechanism and this ADR is the documented target.
+- **Relationship to ADR-0009.** This supersedes ADR-0009 and generalizes its
+  analysis: the hook-per-service it proposed is the degenerate one-tier,
+  no-change-detection instance of the same "CI-triggered, not push-based"
+  principle. That hook switch was dropped as unnecessary for the current
+  three-service demo (#88 / PR #90 closed), so deploys stay on Render Blueprint
+  `autoDeploy`; this ADR is the documented target to adopt when the fleet grows.
 - **This is a design ADR** — no `deploy/services.json`, `RENDER_API_KEY`, or
   `ci.yml` matrix ships in this change; implementation is a separate ticket to be
   opened when the fleet actually grows toward this design.

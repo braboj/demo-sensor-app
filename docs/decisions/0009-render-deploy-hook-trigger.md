@@ -1,6 +1,10 @@
 # ADR-0009 — Trigger Render deploys with a CI deploy hook, not push-based autoDeploy
 
-**Status:** Accepted (2026-07-01, spike #59)
+**Status:** Superseded by [ADR-0010](0010-scalable-render-deploy-manifest-matrix.md)
+(2026-07-02) — the hook implementation (#88 / PR #90) was dropped as unnecessary
+for a three-service demo. Deploys stay on Render Blueprint `autoDeploy`; ADR-0010
+records the scalable target for if/when the fleet grows. The evaluation below is
+kept as the historical record of why push-based `autoDeploy` was reconsidered.
 
 ## Context
 The Render Blueprint (`render.yaml`, shipped in #55) deploys the live stack —
