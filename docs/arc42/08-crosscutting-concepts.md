@@ -105,22 +105,19 @@ couple of seconds holds the connection open through proxies.
 
 ## 8.8 Observability
 
+Logs are structured JSON lines on stdout, for the container runtime to collect.
 The worker logs each meaningful step — start, each recorded reading, and any
-failure (with a traceback) — at INFO level; debug logging is never on in
-production. Operators have two probes for two questions: `GET /health` answers
-"is the process alive?" without touching any dependency, and `GET /ready`
-answers "can it serve?" by running `SELECT 1` and returning 503 when the database
-is unreachable. Logs go to stdout for the container runtime to collect.
+failure (with a traceback); debug logging is never on in production. Operators
+have two probes for two questions: `GET /health` answers "is the process alive?"
+without touching any dependency, and `GET /ready` answers "can it serve?" by
+running `SELECT 1` and returning 503 when the database is unreachable.
 
 | Aspect | Implementation |
 | --- | --- |
-| Log level | INFO by default; no DEBUG in production |
+| Log format | structured JSON to stdout, via the formatter in `logging_config.py`, applied by the application factory |
+| Log level | env-driven (`LOG_LEVEL`), default INFO; no DEBUG in production |
 | Liveness | `GET /health` → `200 {"status":"ok"}`, no dependencies |
 | Readiness | `GET /ready` → `200 {"status":"ready"}` or `503 {"status":"unavailable"}` (DB probe) |
-
-> The convention target is structured JSON logging; the current backend emits
-> plain-text lines. The gap is tracked as technical debt
-> ([Chapter 11](11-risks-and-technical-debt.md)).
 
 ## 8.9 Security
 

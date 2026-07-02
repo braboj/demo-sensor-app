@@ -23,10 +23,8 @@ from flask import Flask
 from sensor_api import create_app
 from sensor_api.blueprints.sensors.services import SensorService
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-)
+# Logging is configured centrally by ``create_app`` (structured JSON to
+# stdout); this logger inherits the root handler once the app is built.
 log = logging.getLogger("sensor.worker")
 
 # Sample interval in seconds — env-configurable, defaults to 10s.

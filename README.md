@@ -162,6 +162,7 @@ important:
 | `CORS_ORIGINS` | backend | — | Allowed frontend origin (never `*`). |
 | `APP_CONFIG` | backend | `production` | Config profile (`development` / `production`). |
 | `SAMPLE_INTERVAL_SECONDS` | backend, worker | `10` | Generator sample interval. |
+| `LOG_LEVEL` | backend, worker | `INFO` | Log level for the structured JSON logs (never `DEBUG` in prod). |
 | `RUN_INPROCESS_GENERATOR` | backend | `false` | Run the generator in-process (free-tier only). |
 | `WEB_CONCURRENCY` | backend | `1` | gunicorn worker count. |
 | `API_URL` | frontend (build) | same-origin `/api/v1/sensors` | Absolute backend URL baked into the bundle. |
