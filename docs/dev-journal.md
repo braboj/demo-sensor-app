@@ -397,3 +397,58 @@ SPA `/charts` embeds it (no `X-Frame-Options`). Frontend gates green throughout
   then close or scope the remainder.
 - **#83** tsconfig modernisation; **#59** deploy-trigger spike (deferred).
 - Epic **#12** is all-but-complete (only #10 + the deferred #59 remain).
+
+## 2026-07-02 — tsconfig modernisation + deploy-trigger decision (then dropped)
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated.
+
+Cleared the two remaining P3 follow-ups and worked the Render deploy-trigger
+question to a recorded decision — then dropped the implementation as unnecessary
+for a three-service demo.
+
+### PRs merged (3)
+
+| PR | Summary | Closes |
+|----|---------|--------|
+| #87 | Modernise `frontend/tsconfig.json` to Angular 19 defaults — drop `_enabledBlockTypes`, `baseUrl`, `useDefineForClassFields`; `moduleResolution` → `bundler` | #83 |
+| #89 | **ADR-0009** — evaluate the Render deploy hook vs `autoDeploy` (spike) | #59 |
+| #92 | **ADR-0010** — scalable multi-service Render deploy (manifest-driven CI matrix); supersedes ADR-0009 | #91 |
+
+**Issues closed:** #83, #59, #91; **#88** closed *not planned* (hook impl dropped).
+
+### Key decisions (see `docs/decisions/`)
+
+- **ADR-0009** — of randomgen AD-17's two drivers for leaving push-based
+  `autoDeploy`, only reliability/CI-gating applies here (sensor_app builds no CI
+  image, so there is no double-build), and the static frontend cannot use
+  `runtime: image`. Chose the deploy-hook trigger over the full pattern.
+- **ADR-0010** — for the many-services case, stay on Render via a data-driven
+  manifest + a single API key + a CI change-detection matrix. Records Render's
+  ~tens-of-services ceiling and the GitOps/K8s revisit threshold, where the
+  skip-`runtime:image` rationale **inverts**.
+- **Dropped the hook implementation** (#88 / PR #90 closed) as unnecessary for
+  the demo; deploys stay on Blueprint `autoDeploy`. **ADR-0009 → Superseded by
+  ADR-0010.**
+
+### Repo metadata
+
+- GitHub **About**: rewrote the description (adds PostgreSQL + Docker) and added
+  15 **topic tags** (previously none).
+
+### Issues filed
+
+- Upstream (`braboj/solid-ai-templates`): **#717** — add a fleet-scale axis to
+  `base-deployment` (deploy mechanism, and its rationale, is scale-dependent).
+
+### Verification
+
+Frontend gates green — eslint + prettier + build + karma (22/22); `tsc --noEmit`
+clean for app + spec. Every PR CI-gated; #87/#89/#92 merged green. No backend
+code changed (backend ruff/mypy/pytest covered by CI). No schema changes.
+
+### Next
+
+- **#10** — decide whether the shipped docs satisfy "documentation & web pages",
+  then close or scope the remainder.
+- Epic **#12** — all-but-complete; only #10 remains open.
