@@ -94,13 +94,13 @@ sequenceDiagram
     EV->>S: fetch latest reading
     S->>DB: SELECT … LIMIT 1
     DB-->>S: latest row
-    EV-->>B: data: {…}  (prime); cursor = last_id
+    EV-->>B: data: {…} (prime) — cursor = last_id
     loop every STREAM_POLL_SECONDS (2s)
         EV->>S: fetch_since(last_id)
         S->>DB: SELECT … WHERE id > last_id ORDER BY id ASC
         DB-->>S: new rows (or none)
         alt new rows
-            EV-->>B: data: {…} per row; advance cursor
+            EV-->>B: data: {…} per row — advance cursor
         else none
             EV-->>B: ": keep-alive" comment
         end
