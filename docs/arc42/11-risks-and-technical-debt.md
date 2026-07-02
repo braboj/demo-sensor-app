@@ -16,14 +16,15 @@ accepting each.
 ## 11.2 Technical debt
 
 `CLAUDE.md` is the *target* convention set the codebase is refactoring toward, so
-some conventions are not yet fully met. The known gaps are listed here; each is a
-candidate to be filed as a `tech-debt` issue and closed against the target.
+some conventions are not yet fully met. The known gaps are tracked as
+[`tech-debt` issues](https://github.com/braboj/demo-sensor-app/issues?q=is%3Aissue+label%3Atech-debt),
+to be closed against the target; the live list there is the source of truth.
 
 | # | Debt | Target | Status |
 | --- | --- | --- | --- |
-| D1 | **Plain-text logs.** The backend logs unstructured text lines, not structured JSON. | Structured JSON logs (`CLAUDE.md` §2.8, [Chapter 8](08-crosscutting-concepts.md)). | Open — INFO-level text today; no secrets/PII logged. |
-| D2 | **Backend image runs as root.** The backend Dockerfile sets no non-root `USER` and is single-stage. | Multi-stage build, non-root user (`CLAUDE.md` §2.9); the frontend nginx image already runs unprivileged. | Open — acceptable for a demo, but a hardening gap. |
-| D3 | **`/ready` is unused by probes.** A deep readiness endpoint exists, but Compose and the hosted platform both probe `/health`. | Wire readiness into the platform's readiness probe where the platform distinguishes the two. | Open — the endpoint is implemented and tested; only the wiring is pending. |
+| D1 | **Plain-text logs.** The backend logs unstructured text lines, not structured JSON. | Structured JSON logs (`CLAUDE.md` §2.8, [Chapter 8](08-crosscutting-concepts.md)). | Open — [#95](https://github.com/braboj/demo-sensor-app/issues/95); INFO-level text today, no secrets/PII logged. |
+| D2 | **Backend image runs as root.** The backend Dockerfile sets no non-root `USER` and is single-stage. | Multi-stage build, non-root user (`CLAUDE.md` §2.9); the frontend nginx image already runs unprivileged. | Open — [#96](https://github.com/braboj/demo-sensor-app/issues/96); acceptable for a demo, but a hardening gap. |
+| D3 | **`/ready` is unused by probes.** A deep readiness endpoint exists, but Compose and the hosted platform both probe `/health`. | Wire readiness into the platform's readiness probe where the platform distinguishes the two. | Open — [#97](https://github.com/braboj/demo-sensor-app/issues/97); the endpoint is implemented and tested, only the wiring is pending. |
 | D4 | **Poll-based streaming.** The SSE stream polls the database every 2 s for new rows rather than being notified. | Event-driven delivery (e.g. PostgreSQL `LISTEN`/`NOTIFY`) if load ever warrants it. | Accepted — the 2 s poll is simple and ample against a 10 s generator interval. |
 
 The original gap list — the source of the refactor — is the 360-degree audit at
