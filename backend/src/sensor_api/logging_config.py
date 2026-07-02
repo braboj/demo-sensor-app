@@ -13,7 +13,7 @@ import json
 import logging
 import os
 import sys
-import time
+from datetime import datetime, timezone
 from typing import Any
 
 DEFAULT_LEVEL = "INFO"
@@ -31,13 +31,10 @@ _STANDARD_ATTRS = frozenset(logging.makeLogRecord({}).__dict__) | {
 class JsonFormatter(logging.Formatter):
     """Render a log record as a single-line JSON object, timestamped in UTC."""
 
-    converter = time.gmtime
-    default_time_format = "%Y-%m-%dT%H:%M:%S"
-    default_msec_format = "%s.%03dZ"
-
     def format(self, record: logging.LogRecord) -> str:
+        stamp = datetime.fromtimestamp(record.created, tz=timezone.utc)
         payload: dict[str, Any] = {
-            "time": self.formatTime(record),
+            "time": stamp.isoformat().replace("+00:00", "Z"),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -57,7 +54,8 @@ def configure_logging(level: str | None = None) -> None:
     app more than once in a process never double-logs. An unknown level name
     falls back to INFO rather than raising.
     """
-    resolved = (level or os.getenv("LOG_LEVEL", DEFAULT_LEVEL)).upper()
+    name = level or os.getenv("LOG_LEVEL") or DEFAULT_LEVEL
+    resolved = name.upper()
     # Map the name to its numeric level; an unknown name falls back to INFO.
     named_level = getattr(logging, resolved, None)
     level_value = named_level if isinstance(named_level, int) else logging.INFO
