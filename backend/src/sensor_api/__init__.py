@@ -8,6 +8,7 @@ from .blueprints.sensors import api
 from .config import get_config, split_origins
 from .errors import register_error_handlers
 from .extensions import db, migrate
+from .logging_config import configure_logging
 
 
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
@@ -25,6 +26,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     app.config.from_object(get_config())
     if test_config is not None:
         app.config.from_mapping(test_config)
+
+    # Structured JSON logs for real runs (web + worker share this factory);
+    # skipped under tests so pytest's own log capture stays intact.
+    if not app.config.get("TESTING"):
+        configure_logging()
 
     # Scope CORS to the configured frontend origins — never a wildcard.
     origins = split_origins(app.config.get('CORS_ORIGINS'))
