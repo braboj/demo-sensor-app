@@ -114,6 +114,8 @@ npx eslint .                           # lint
   `.mypy_cache/`, `node_modules/`, `dist/`, `.angular/`, `*.zip`,
   `package-lock.json` is **committed** (do not ignore it).
 - Migrations are committed — never regenerate a migration already merged.
+- Release tags are SemVer, lowercase-prefixed: `vMAJOR.MINOR.PATCH` (e.g.
+  `v0.1.0`) — three segments, no fourth, no capital `V`.
 
 ### 2.2 Python (backend)
 

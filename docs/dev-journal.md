@@ -577,3 +577,21 @@ Report: `docs/audits/2026-07-03-360.md`.
 
 - No blocking work. Backlog #107–#119 is filed and prioritised; P1 (#107/#108)
   is the highest-leverage next step (lifts Testing/CI off B-).
+
+## 2026-07-03 — Release-tag SemVer migration
+
+**Tool:** Claude Code (Opus 4.8) · **Branch:** `docs/2026-07-03-360-audit`.
+
+Migrated release tags from the non-standard four-segment `V0.0.x.0` scheme to
+SemVer `vMAJOR.MINOR.PATCH`. Both were lightweight tags, so the rename was
+lossless — new tags created at the same commits, then old tags removed
+(local + `origin`).
+
+| Old | New | Commit |
+|-----|-----|--------|
+| `V0.0.1.0` | `v0.0.1` | `b6127c7` |
+| `V0.0.2.0` | `v0.0.2` | `0df6d62` |
+
+No GitHub Releases were attached, so nothing was orphaned. Codified the scheme
+as a rule in `CLAUDE.md` §2.1. Clones still holding the old tags should run
+`git fetch --prune --prune-tags origin`.
