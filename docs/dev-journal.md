@@ -515,3 +515,65 @@ session (the tech debt named in arc42 §11.2). No issues left open.
 - No blocking work — issue board empty; `main` clean.
 - Optional: install Python 3.12 for exact local/CI parity; further Angular 19
   parity on the leaf tsconfigs if desired.
+
+## 2026-07-03 — 360 milestone re-audit + remediation backlog
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated.
+
+Ran a fresh 360-degree audit (the first since the pre-refactor baseline) as
+**seven parallel, context-isolated reviewers** (Viability, Value, Discovery,
+Backend, Architecture, Frontend, Testing/CI) per
+`base/workflow/360.md`, with every crux finding re-verified at the parent level
+via `git`/file reads and live tool runs (`pytest`, `mypy`, `ruff`, `npm test`).
+
+### Result — overall **D → B-**
+
+| Dimension | Grade | (was) |
+|-----------|-------|-------|
+| Viability | A- | C- |
+| Value | A- | D+ |
+| Backend | A- | D+ |
+| Architecture | A- | D+ |
+| Frontend | A- | D |
+| Discovery | B | D+ |
+| Testing/CI | **B-** | D |
+
+Zero open Criticals — both baseline Criticals (debug-server RCE; 151MB
+`frontend.zip`) resolved and verified, the zip gone even from reachable history
+(tracked tree ~473MB → 4.8MB). Overall grade pinned by the weakest slice,
+**Testing/CI**, on test-fidelity conventions (SQLite substituted for the mandated
+Postgres test DB, no `conftest.py`/`TestingConfig` fixture, unmeasured coverage,
+unenforced `ruff format`, missing `.editorconfig`).
+
+Report: `docs/audits/2026-07-03-360.md`.
+
+### PRs
+
+| PR | Summary | Closes |
+|----|---------|--------|
+| #120 | Add `docs/audits/2026-07-03-360.md` (360 re-audit) + this journal entry | — |
+
+### Issues created (13 — remediation backlog)
+
+- **P1** #107 real Postgres test DB, #108 `conftest.py`/`TestingConfig` fixture.
+- **P2** #109 coverage both stacks, #110 enforce `ruff format`, #111
+  `.editorconfig`, #112 remove protractor cruft + `angular.svg`, #113 require
+  `DATABASE_URL` in Production.
+- **P3** #114 README screenshot/OG image, #115 pool limits, #116 rename CI
+  backend job + branch-protection check, #117 test hygiene, #118 free-tier DB
+  backup/restore, #119 self-host fonts + payload validation.
+
+### Process notes
+
+- Notable catch: the protractor bootstrap in `frontend/src/main.ts:16` is the
+  **same line the baseline flagged (FE#13)** — it survived the entire refactor
+  (now #112).
+- Corrected a stale note: `backend/.env.example` is complete and committed
+  (LOG_LEVEL added in #102); only the Read/Edit *tools* are blocked by the global
+  `.env*` deny rule — the file itself was never the gap.
+
+### Next
+
+- No blocking work. Backlog #107–#119 is filed and prioritised; P1 (#107/#108)
+  is the highest-leverage next step (lifts Testing/CI off B-).
