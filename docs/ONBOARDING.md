@@ -26,7 +26,7 @@ dashboard provisioned as code from `deploy/grafana/provisioning/`).
 For local (non-Docker) development of a single service:
 
 - **Backend:** Python 3.12.
-- **Frontend:** Node.js 22 + npm.
+- **Frontend:** Node.js ≥ 22.22.3 + npm (Angular 22's CLI requires it).
 
 ## Run the whole stack
 
