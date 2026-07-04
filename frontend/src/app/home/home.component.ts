@@ -1,4 +1,10 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription, catchError, of } from 'rxjs';
 import { SensorService } from '../sensors.service';
@@ -79,6 +85,7 @@ const MAX_ROWS = 100;
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit, OnDestroy {

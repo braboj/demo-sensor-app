@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 
@@ -42,6 +42,7 @@ import { environment } from '../../environments/environment';
       }
     </section>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./charts.component.css'],
 })
 export class ChartsComponent {
