@@ -21,6 +21,12 @@ updates:
           - patch
 
   # Frontend npm dependencies
+  # NOTE: frontend/package.json declares chokidar + readdirp as direct
+  # devDependencies even though the app doesn't import them. Angular 22 tooling
+  # peers chokidar ^5 (via @angular-devkit/core), which npm nests under every
+  # consumer; Dependabot's lock regeneration drops those peer-nested nodes and
+  # every npm PR then fails `npm ci` ("Missing: chokidar@5 from lock file").
+  # Declaring them direct hoists a single top-level copy that survives the regen.
   - package-ecosystem: npm
     directory: /frontend
     schedule:
