@@ -29,25 +29,22 @@ updates:
     commit-message:
       prefix: chore(deps)
     ignore:
-      # Angular 19's @angular-devkit/build-angular peers typescript ">=5.5 <5.8".
-      # Cap TS below 5.8 so Dependabot only proposes Angular-19-compatible bumps
-      # (e.g. 5.7.x); a higher TS rides with the Angular major upgrade (grouped in
-      # `angular`). Without this the frontend-minor group keeps pulling TS 5.9,
-      # which fails peer resolution (ERESOLVE) and blocks the safe bumps batched
-      # with it. Lift this cap when Angular is upgraded.
+      # Angular 22's @angular/compiler-cli peers typescript ">=6.0 <6.1". Cap TS
+      # below 6.1 so Dependabot only proposes Angular-22-compatible bumps; a newer
+      # TS rides with the next Angular major. Raise this ceiling when Angular is
+      # upgraded.
       - dependency-name: "typescript"
-        versions: [">=5.8"]
-      # angular-eslint majors track Angular majors: v20+ pulls a newer nested
-      # @angular-devkit/core that peers chokidar/readdirp ^5, which Dependabot
-      # then drops from the lock (incomplete lock -> `npm ci` fails). Pin to the
-      # Angular-19 line (19.x); a higher angular-eslint rides with the Angular
-      # major upgrade. Lift this cap when Angular is upgraded.
+        versions: [">=6.1"]
+      # angular-eslint majors track Angular majors (v23 peers @angular/cli 23).
+      # Keep it on the Angular-22 line; a higher angular-eslint rides with the
+      # next Angular major. Raise this when Angular is upgraded.
       - dependency-name: "angular-eslint"
-        versions: [">=20"]
+        versions: [">=23"]
       # Angular framework majors are a deliberate `ng update` migration, not a
-      # Dependabot bump — an isolated 19->22 version bump just fails the build
-      # (needs the migration). Ignore majors so the platform stays on 19 until
-      # the upgrade is done by hand; lift all of these caps at that point.
+      # Dependabot bump — an isolated major bump just fails the build (needs the
+      # migration schematics). Ignore framework majors permanently; do them by
+      # hand with `ng update` (see docs/dev-journal for the 19->22 upgrade), then
+      # raise the TS and angular-eslint ceilings above.
       - dependency-name: "@angular/*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@angular-devkit/*"
