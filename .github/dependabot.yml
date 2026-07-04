@@ -8,6 +8,17 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    groups:
+      # Batch routine backend minor/patch bumps into a single PR. Majors stay
+      # individual so they get their own review (e.g. gunicorn 23->26, mypy 1->2),
+      # which matters because CI's backend job runs ruff + pytest only, not mypy.
+      backend-minor:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
   # Frontend npm dependencies
   - package-ecosystem: npm
@@ -17,6 +28,35 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    groups:
+      # Angular framework + build tooling + zone.js must move in lockstep at the
+      # same major. Grouping them makes an upgrade arrive as ONE coordinated PR
+      # instead of isolated per-package PRs that break peer-dependency resolution
+      # (as happened with @angular/router, @angular-devkit/build-angular and
+      # zone.js in July 2026). No update-types filter, so majors are coordinated
+      # into a single PR rather than suppressed — take it alongside `ng update`.
+      angular:
+        applies-to: version-updates
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@ngtools/*"
+          - "zone.js"
+      # Batch everything else (lint/format/test tooling, rxjs, tslib, @types)
+      # at minor/patch into one PR. Non-Angular majors still come individually
+      # so they can be reviewed on their own.
+      frontend-minor:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "@ngtools/*"
+          - "zone.js"
+        update-types:
+          - minor
+          - patch
 
   # GitHub Actions used by the workflows
   - package-ecosystem: github-actions
@@ -25,3 +65,9 @@ updates:
       interval: weekly
     commit-message:
       prefix: chore(ci)
+    groups:
+      # One PR for all Action version bumps.
+      actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
