@@ -44,13 +44,23 @@ updates:
       # major upgrade. Lift this cap when Angular is upgraded.
       - dependency-name: "angular-eslint"
         versions: [">=20"]
+      # Angular framework majors are a deliberate `ng update` migration, not a
+      # Dependabot bump — an isolated 19->22 version bump just fails the build
+      # (needs the migration). Ignore majors so the platform stays on 19 until
+      # the upgrade is done by hand; lift all of these caps at that point.
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-devkit/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@ngtools/*"
+        update-types: ["version-update:semver-major"]
     groups:
-      # Angular framework + build tooling + zone.js must move in lockstep at the
-      # same major. Grouping them makes an upgrade arrive as ONE coordinated PR
-      # instead of isolated per-package PRs that break peer-dependency resolution
-      # (as happened with @angular/router, @angular-devkit/build-angular and
-      # zone.js in July 2026). No update-types filter, so majors are coordinated
-      # into a single PR rather than suppressed — take it alongside `ng update`.
+      # Angular framework + build tooling + zone.js move in lockstep. Grouping
+      # batches their minor/patch updates into ONE coordinated PR instead of
+      # isolated per-package PRs that break peer-dependency resolution (as
+      # happened with @angular/router, @angular-devkit/build-angular and zone.js
+      # in July 2026). Majors are ignored above — do them as a deliberate
+      # `ng update` migration, then lift the caps.
       angular:
         applies-to: version-updates
         patterns:
