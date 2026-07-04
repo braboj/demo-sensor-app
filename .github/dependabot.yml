@@ -37,6 +37,13 @@ updates:
       # with it. Lift this cap when Angular is upgraded.
       - dependency-name: "typescript"
         versions: [">=5.8"]
+      # angular-eslint majors track Angular majors: v20+ pulls a newer nested
+      # @angular-devkit/core that peers chokidar/readdirp ^5, which Dependabot
+      # then drops from the lock (incomplete lock -> `npm ci` fails). Pin to the
+      # Angular-19 line (19.x); a higher angular-eslint rides with the Angular
+      # major upgrade. Lift this cap when Angular is upgraded.
+      - dependency-name: "angular-eslint"
+        versions: [">=20"]
     groups:
       # Angular framework + build tooling + zone.js must move in lockstep at the
       # same major. Grouping them makes an upgrade arrive as ONE coordinated PR
