@@ -28,6 +28,15 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # Angular 19's @angular-devkit/build-angular peers typescript ">=5.5 <5.8".
+      # Cap TS below 5.8 so Dependabot only proposes Angular-19-compatible bumps
+      # (e.g. 5.7.x); a higher TS rides with the Angular major upgrade (grouped in
+      # `angular`). Without this the frontend-minor group keeps pulling TS 5.9,
+      # which fails peer resolution (ERESOLVE) and blocks the safe bumps batched
+      # with it. Lift this cap when Angular is upgraded.
+      - dependency-name: "typescript"
+        versions: [">=5.8"]
     groups:
       # Angular framework + build tooling + zone.js must move in lockstep at the
       # same major. Grouping them makes an upgrade arrive as ONE coordinated PR
