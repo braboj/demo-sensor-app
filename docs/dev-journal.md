@@ -595,3 +595,72 @@ lossless — new tags created at the same commits, then old tags removed
 No GitHub Releases were attached, so nothing was orphaned. Codified the scheme
 as a rule in `CLAUDE.md` §2.1. Clones still holding the old tags should run
 `git fetch --prune --prune-tags origin`.
+
+## 2026-07-04 — Dependabot triage & npm lockfile-bug fix
+
+**Tool:** Claude Code (Opus 4.8) · **Branch:** multiple `chore/*`.
+
+Cleared a backlog of 10 Dependabot PRs (#122–#131), then handled the follow-on
+batch the config changes triggered (#132–#145). Net: backend bumps merged, the
+frontend npm ecosystem's recurring `npm ci` failure diagnosed and fixed at the
+root, and Dependabot grouping + version caps added so it can't regress.
+
+### Root cause — Dependabot npm `npm ci` failures
+
+Every frontend Dependabot PR failed `Frontend (build)` at `npm ci` with
+`Missing: @types/node@26 / chokidar@5 / readdirp@5 / undici-types@8 from lock file`.
+Two independent layers, both fixed:
+
+- **@types/node drift (#140):** `@types/node` was pinned `^16` while the project
+  builds/runs on Node 22, leaving two majors in the tree; Dependabot drifted the
+  loose nested one to 26 (→ undici-types 8) and serialised an incomplete lock.
+  Fixed by pinning `@types/node ^22.12.0` — the tree collapses to one 22.x.
+- **angular-eslint nested devkit (#145):** `angular-eslint 21` pulled a newer
+  nested `@angular-devkit/core` peering `chokidar/readdirp ^5`; Dependabot dropped
+  those deeply-nested entries. Fixed by pinning `angular-eslint 19.8.1` (the
+  Angular-19 line) — chokidar@5/readdirp@5 leave the tree.
+
+Confirmed cured by a real Dependabot `recreate` (#143 went fully green in CI), not
+just local checks. (Earlier I twice called it fixed prematurely; the final claim is
+CI-proven.)
+
+### Config hardening (`.github/dependabot.yml`)
+
+- **Grouping (#133):** `angular` lockstep group (`@angular/*`, `@angular-devkit/*`,
+  `@ngtools/*`, `zone.js`) so an Angular major arrives as ONE coordinated PR, not
+  11 isolated ones; `frontend-minor` + `backend-minor` batch minor/patch; `actions`
+  groups all Action bumps.
+- **Caps:** ignore `typescript >=5.8` (#142) and `angular-eslint >=20` (#145) — both
+  coupled to Angular 19; lift on the Angular upgrade.
+
+### PRs merged
+
+- Backend: #122 flask-migrate 4.1, #123 flask 3.1.3, #124 python-dotenv 1.2.2,
+  #125 gunicorn 26, #126 mypy 2.1, #134 gevent 26.5.
+- Frontend: #132 lockfile regen + prettier 3.9.4 + typescript-eslint 8.62.1,
+  #140 @types/node ^22, #143 frontend-minor (rxjs 7.8.2 / karma-jasmine-html-reporter
+  2.2.0 / typescript 5.7.3), #145 angular-eslint 19.8.1.
+- Config/docs: #133 grouping, #142 TS cap, #120 360 re-audit doc (pre-existing).
+
+### PRs closed (not merged)
+
+- #127/#129 superseded by #132; #136 replaced on recreate.
+- #128/#130 (@angular/router, @angular-devkit/build-angular 19→22), #131 zone.js
+  0.16, #138 typescript 6.0, #144 angular-eslint 22 — Angular-19-incompatible /
+  lockstep; belong to the Angular major upgrade.
+- #137/#139 jasmine 6 majors — do `jasmine-core` + `@types/jasmine` together,
+  deliberately, later.
+
+### Notes
+
+- CI's backend job runs ruff + pytest only — **mypy is not gated**; validated the
+  mypy 1→2 major locally before merging #126.
+- Owner-override squash-merge used throughout (branch protection blocks
+  self-approving Dependabot/own PRs).
+
+### Next
+
+- **#135** left open on purpose: the `angular` group 19→22 coordinated migration PR
+  — the deliberate Angular-upgrade tracker (needs `ng update`, not a merge). Lift the
+  TS and angular-eslint caps as part of that upgrade.
+- Jasmine 6 upgrade (both packages together) when desired.
