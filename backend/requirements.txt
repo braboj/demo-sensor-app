@@ -8,4 +8,4 @@ flask_cors~=6.0.5
 gunicorn~=26.0.0
 # Cooperative worker class for gunicorn so a long-lived SSE stream
 # (/api/v1/sensors/stream) does not tie up the single web worker.
-gevent~=24.2
+gevent~=26.5
