@@ -515,3 +515,83 @@ session (the tech debt named in arc42 §11.2). No issues left open.
 - No blocking work — issue board empty; `main` clean.
 - Optional: install Python 3.12 for exact local/CI parity; further Angular 19
   parity on the leaf tsconfigs if desired.
+
+## 2026-07-03 — 360 milestone re-audit + remediation backlog
+
+**Tool:** Claude Code (Opus 4.8) · **Branch model:** one concern per PR off
+`main`, CI-gated.
+
+Ran a fresh 360-degree audit (the first since the pre-refactor baseline) as
+**seven parallel, context-isolated reviewers** (Viability, Value, Discovery,
+Backend, Architecture, Frontend, Testing/CI) per
+`base/workflow/360.md`, with every crux finding re-verified at the parent level
+via `git`/file reads and live tool runs (`pytest`, `mypy`, `ruff`, `npm test`).
+
+### Result — overall **D → B-**
+
+| Dimension | Grade | (was) |
+|-----------|-------|-------|
+| Viability | A- | C- |
+| Value | A- | D+ |
+| Backend | A- | D+ |
+| Architecture | A- | D+ |
+| Frontend | A- | D |
+| Discovery | B | D+ |
+| Testing/CI | **B-** | D |
+
+Zero open Criticals — both baseline Criticals (debug-server RCE; 151MB
+`frontend.zip`) resolved and verified, the zip gone even from reachable history
+(tracked tree ~473MB → 4.8MB). Overall grade pinned by the weakest slice,
+**Testing/CI**, on test-fidelity conventions (SQLite substituted for the mandated
+Postgres test DB, no `conftest.py`/`TestingConfig` fixture, unmeasured coverage,
+unenforced `ruff format`, missing `.editorconfig`).
+
+Report: `docs/audits/2026-07-03-360.md`.
+
+### PRs
+
+| PR | Summary | Closes |
+|----|---------|--------|
+| #120 | Add `docs/audits/2026-07-03-360.md` (360 re-audit) + this journal entry | — |
+
+### Issues created (13 — remediation backlog)
+
+- **P1** #107 real Postgres test DB, #108 `conftest.py`/`TestingConfig` fixture.
+- **P2** #109 coverage both stacks, #110 enforce `ruff format`, #111
+  `.editorconfig`, #112 remove protractor cruft + `angular.svg`, #113 require
+  `DATABASE_URL` in Production.
+- **P3** #114 README screenshot/OG image, #115 pool limits, #116 rename CI
+  backend job + branch-protection check, #117 test hygiene, #118 free-tier DB
+  backup/restore, #119 self-host fonts + payload validation.
+
+### Process notes
+
+- Notable catch: the protractor bootstrap in `frontend/src/main.ts:16` is the
+  **same line the baseline flagged (FE#13)** — it survived the entire refactor
+  (now #112).
+- Corrected a stale note: `backend/.env.example` is complete and committed
+  (LOG_LEVEL added in #102); only the Read/Edit *tools* are blocked by the global
+  `.env*` deny rule — the file itself was never the gap.
+
+### Next
+
+- No blocking work. Backlog #107–#119 is filed and prioritised; P1 (#107/#108)
+  is the highest-leverage next step (lifts Testing/CI off B-).
+
+## 2026-07-03 — Release-tag SemVer migration
+
+**Tool:** Claude Code (Opus 4.8) · **Branch:** `docs/2026-07-03-360-audit`.
+
+Migrated release tags from the non-standard four-segment `V0.0.x.0` scheme to
+SemVer `vMAJOR.MINOR.PATCH`. Both were lightweight tags, so the rename was
+lossless — new tags created at the same commits, then old tags removed
+(local + `origin`).
+
+| Old | New | Commit |
+|-----|-----|--------|
+| `V0.0.1.0` | `v0.0.1` | `b6127c7` |
+| `V0.0.2.0` | `v0.0.2` | `0df6d62` |
+
+No GitHub Releases were attached, so nothing was orphaned. Codified the scheme
+as a rule in `CLAUDE.md` §2.1. Clones still holding the old tags should run
+`git fetch --prune --prune-tags origin`.
