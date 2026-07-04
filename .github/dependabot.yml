@@ -35,6 +35,12 @@ updates:
       # upgraded.
       - dependency-name: "typescript"
         versions: [">=6.1"]
+      # @types/node tracks the Node major we build/run on (Node 22 in CI). A
+      # higher major (26 = Node 26 types) drifts the type tree and reintroduces
+      # the incomplete-lock `npm ci` failures we fixed by pinning @types/node ^22.
+      # Cap it to 22.x; raise this when the CI/runtime Node major changes.
+      - dependency-name: "@types/node"
+        versions: [">=23"]
       # angular-eslint majors track Angular majors (v23 peers @angular/cli 23).
       # Keep it on the Angular-22 line; a higher angular-eslint rides with the
       # next Angular major. Raise this when Angular is upgraded.
