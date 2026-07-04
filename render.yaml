@@ -60,6 +60,12 @@ services:
     staticPublishPath: ./dist/sensor-app/browser
     autoDeploy: true
     envVars:
+      # Angular 22's CLI aborts with exit status 3 on Node < 22.22.3 (see its
+      # engines: "^22.22.3 || ^24.15.0 || >=26.0.0"). Render's default Node is
+      # older, so pin the build to Angular's stated minimum — mirrors CI's
+      # node-version "22". Bump alongside future `ng update` upgrades.
+      - key: NODE_VERSION
+        value: "22.22.3"
       # Baked into the bundle at build time by scripts/set-api-url.mjs — the
       # absolute backend endpoint, since the SPA and API are different origins.
       - key: API_URL
