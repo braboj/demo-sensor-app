@@ -715,3 +715,26 @@ permanent policy. npm PR limit raised 5→10 (#155).
 
 OnPush adoption; jasmine 6 (both packages together); optional Karma→Vitest
 migration; remove Protractor cruft (#112).
+
+## 2026-07-04 — Render frontend deploy fix (Angular 22 Node floor)
+
+**Tool:** Claude Code (Opus 4.8) · **Branch:** `fix/render-node-version`, CI-gated.
+
+Render's `sensor-app-frontend` static-site build was failing on every deploy
+since the Angular 19→22 upgrade with *Reason: "Exited with status 3"*. Status 3
+is the Angular 22 CLI's own exit code when Node is below its supported minimum:
+`@angular/cli/bin/ng.js` prints *"The Angular CLI requires a minimum Node.js
+version of 22.22.3"* and sets `process.exitCode = 3` **before `ng build` runs**
+(engines: `^22.22.3 || ^24.15.0 || >=26.0.0`). The repo pinned Node only for CI
+(`node-version: "22"`); Render had no equivalent pin and built on its older
+default. The chokidar/#153 commit named in Render's email was just the build
+trigger, not the cause.
+
+**Fix (#157):** added `NODE_VERSION: "22.22.3"` to the frontend service in
+`render.yaml`, pinned to Angular's stated minimum so it deterministically
+satisfies the engines range; mirrors CI's Node major. Only the frontend service
+was affected — backend and Grafana are Docker images and deploy unchanged.
+
+**Rule:** a Node bump for the frontend now has three call sites to keep in
+sync — `frontend/package.json` engines, CI `node-version`, and `render.yaml`
+`NODE_VERSION`. Bump all three on future `ng update` upgrades.
