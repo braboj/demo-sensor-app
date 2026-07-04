@@ -41,7 +41,7 @@ chain (`stack-flask` + frontend layer + platform):
 - Backend framework: Flask 3.x (application factory + blueprints)
 - ORM / migrations: SQLAlchemy 2.x + Flask-Migrate (Alembic)
 - WSGI server (production): gunicorn — never the Flask dev server
-- Frontend: Angular 19 (standalone components) + TypeScript 5.x (strict)
+- Frontend: Angular 22 (standalone components) + TypeScript 6.x (strict)
 - Database: PostgreSQL 16
 - Visualization: Grafana (dashboards & datasources provisioned as code)
 - Linters/formatters: ruff + ruff format (Python), ESLint + Prettier (TS)
@@ -187,7 +187,7 @@ npx eslint .                           # lint
 
 ### 2.7 TypeScript / Angular (frontend)
 
-- Angular 19 standalone components; `strict: true` and strict templates;
+- Angular 22 standalone components; `strict: true` and strict templates;
   no `any` — type the API boundary with the `SensorData` interface.
 - Call the API via `HttpClient`, never `fetch`. Always handle errors
   with `catchError`; render explicit loading, empty, and error states —

@@ -664,3 +664,54 @@ CI-proven.)
   — the deliberate Angular-upgrade tracker (needs `ng update`, not a merge). Lift the
   TS and angular-eslint caps as part of that upgrade.
 - Jasmine 6 upgrade (both packages together) when desired.
+
+## 2026-07-04 (later) — Angular 19 → 22 upgrade + Dependabot lock refix
+
+**Tool:** Claude Code (Opus 4.8) · **Branch:** `feat/angular-22`, `chore/*`.
+
+Upgraded the frontend from Angular 19 to 22 and refixed the Dependabot npm
+lockfile bug that resurfaced on the new baseline.
+
+### Angular 19 → 22 (#151)
+
+Stepped `ng update` 19→20→21→22, verifying lint/build/22-tests after each.
+19→20 and 20→21 migrations were no-ops (the app was already on the esbuild
+`application` builder, control-flow syntax, standalone components). 22 applied
+real migrations: `ChangeDetectionStrategy.Eager` on all components, `withXhr()`
+on a spec, extended-diagnostics tsconfig flags. Result: Angular 22.0.5,
+TypeScript 6.0.3, angular-eslint 22.0.0; zone.js stays 0.15, jasmine stays 5.
+
+- **Change detection:** Angular 22 defaults to OnPush; the migration added
+  `Eager` to preserve behavior. The live components update via
+  `subscribe()` + field mutation and would not re-render under OnPush, so Eager
+  is kept and angular-eslint 22's `prefer-on-push` rule is disabled (documented).
+  OnPush adoption is a deliberate follow-up.
+- **Node:** Angular 22's CLI requires Node ≥ 22.22.3. Added an `engines` field;
+  CI's `node-version: "22"` resolves to a satisfying release. Local dev on older
+  22.x must upgrade Node.
+
+### Dependabot lockfile bug, refixed (#153)
+
+On Angular 22 the `Missing: chokidar@5 from lock file` failure returned —
+Angular 22 *core* (`@angular/compiler-cli`, `@angular-devkit/core`) now peers
+`chokidar ^5`, which Dependabot drops when regenerating the lock. No pin/override
+fix was possible (three majors genuinely needed: 5 for Angular, 4 for sass, 3 for
+karma). Fix: declare `chokidar ^5` + `readdirp ^5` as **direct devDependencies**
+so a single top-level `@5` is hoisted — Dependabot only ever dropped the
+*peer-nested* copies, never top-level/regular ones.
+
+**Proven with `dependabot-cli`:** ran the real dependabot-core npm updater in
+Docker against `main`; the regenerated lockfile keeps `chokidar@5` and `npm ci`
+passes. (There is no GitHub API to trigger a Dependabot version scan on demand —
+only the UI "Check for updates" button or a structural `dependabot.yml` change.)
+
+### Config
+
+Caps rebased to the Angular-22 baseline: `typescript >=6.1`, `angular-eslint >=23`,
+`@types/node >=23` (#152, tracks Node 22); framework majors stay ignored as the
+permanent policy. npm PR limit raised 5→10 (#155).
+
+### Next
+
+OnPush adoption; jasmine 6 (both packages together); optional Karma→Vitest
+migration; remove Protractor cruft (#112).

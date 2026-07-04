@@ -1,6 +1,9 @@
 {
   "name": "sensor-app-frontend",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=22.22.3"
+  },
   "scripts": {
     "ng": "ng",
     "start": "NG_BUILD_PARALLEL_TS=0 ng serve",
