@@ -4,6 +4,8 @@
 
 # Sensor Dashboard
 
+> **Archived demo.** Kept for reference only; not maintained.
+
 *A multi-service demo that simulates industrial-plant sensor readings —
 generated, stored, streamed live, and charted.*
 
